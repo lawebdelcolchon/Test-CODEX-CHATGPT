@@ -1,0 +1,13 @@
+[
+  {
+    "id": "po1",
+    "datetime": "2025-07-15T10:30:00Z",
+    "supplier": "Textiles Europa",
+    "items": [
+      {
+        "input_id": "i1",
+        "qty": 100
+      }
+    ]
+  }
+]

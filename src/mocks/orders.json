@@ -1,0 +1,20 @@
+[
+  {
+    "id": "o1",
+    "customer_name": "Laura Gómez",
+    "status": "paid",
+    "total": 89.89
+  },
+  {
+    "id": "o2",
+    "customer_name": "Carlos Ruiz",
+    "status": "pending",
+    "total": 19.99
+  },
+  {
+    "id": "o3",
+    "customer_name": "María Pérez",
+    "status": "shipped",
+    "total": 39.99
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "i1",
+    "name": "Algodón crudo",
+    "unit": "kg"
+  },
+  {
+    "id": "i2",
+    "name": "Colorante azul",
+    "unit": "ml"
+  }
+]

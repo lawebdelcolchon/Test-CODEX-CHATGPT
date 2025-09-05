@@ -1,0 +1,12 @@
+[
+  {
+    "id": "cam1",
+    "name": "Back to School",
+    "discount": 10
+  },
+  {
+    "id": "cam2",
+    "name": "Black Friday",
+    "discount": 25
+  }
+]
