@@ -237,128 +237,29 @@ export default function Index() {
               description="No hay registros para mostrar"
             />
           </div>
-
-          {/* Customer Groups Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
-            <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Grupos de Clientes</h2>
-              <Link to={`/customers/${customer.id}/add-customer-groups`}>
-                <Button variant="secondary" size="small" className="txt-compact-small-plus gap-x-1.5 px-2 py-1">
-                  Agregar
-                </Button>
-              </Link>
-            </div>
-            <EmptyState 
-              title="No hay registros"
-              description="Este cliente no pertenece a ningún grupo."
-            />
-          </div>
         </div>
 
         {/* Sidebar - Desktop Only */}
         <div className="hidden flex-col gap-y-3 xl:flex">
-          {/* Metadata Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-x-3">
-              <h2 className="font-sans font-medium h2-core">Metadatos</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                0 claves
-              </Badge>
+          {/* Addresses Section */}
+          <div className="flex w-full max-w-[100%] flex-col gap-y-3 xl:mt-0 xl:max-w-[440px]">
+            <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
+              <div className="flex items-center justify-between px-6 py-4">
+                <h2 className="font-sans font-medium h2-core">Direcciones</h2>
+                <Link 
+                  to={`/customers/${customer.id}/create-address`}
+                  className="text-ui-fg-muted text-xs"
+                >
+                  Agregar
+                </Link>
+              </div>
+              <div className="w-full items-center justify-center gap-y-4 flex h-full flex-col overflow-hidden border-t p-6">
+                <EmptyState 
+                  title="No hay registros"
+                  description="No hay registros para mostrar"
+                />
+              </div>
             </div>
-            <Link to={`/customers/${customer.id}/metadata/edit`}>
-              <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
-                <PencilSquare />
-              </Button>
-            </Link>
-          </div>
-
-          {/* JSON Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-x-4">
-              <h2 className="font-sans font-medium h2-core">JSON</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                {Object.keys(customer).length} claves
-              </Badge>
-            </div>
-            <Button 
-              variant="transparent" 
-              size="small" 
-              className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle"
-            >
-              <PencilSquare />
-            </Button>
-          </div>
-        </div>
-
-        {/* Addresses Section */}
-        <div className="flex w-full max-w-[100%] flex-col gap-y-3 xl:mt-0 xl:max-w-[440px]">
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
-            <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Direcciones</h2>
-              <Link 
-                to={`/customers/${customer.id}/create-address`}
-                className="text-ui-fg-muted text-xs"
-              >
-                Agregar
-              </Link>
-            </div>
-            <div className="w-full items-center justify-center gap-y-4 flex h-full flex-col overflow-hidden border-t p-6">
-              <EmptyState 
-                title="No hay registros"
-                description="No hay registros para mostrar"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Sidebar */}
-        <div className="flex flex-col gap-y-3 xl:hidden">
-          {/* Metadata Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-x-3">
-              <h2 className="font-sans font-medium h2-core">Metadatos</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                0 claves
-              </Badge>
-            </div>
-            <Link to={`/customers/${customer.id}/metadata/edit`}>
-              <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
-                <PencilSquare />
-              </Button>
-            </Link>
-          </div>
-
-          {/* JSON Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-x-4">
-              <h2 className="font-sans font-medium h2-core">JSON</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                {Object.keys(customer).length} claves
-              </Badge>
-            </div>
-            <Button 
-              variant="transparent" 
-              size="small" 
-              className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle"
-            >
-              <PencilSquare />
-            </Button>
           </div>
         </div>
       </div>

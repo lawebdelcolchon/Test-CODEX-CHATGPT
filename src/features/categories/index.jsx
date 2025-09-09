@@ -245,17 +245,6 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Subcategories Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
-            <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Subcategorías</h2>
-            </div>
-            <EmptyState 
-              title="No hay registros"
-              description="Esta categoría no tiene subcategorías."
-            />
-          </div>
-
           {/* Products Section */}
           <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
@@ -275,110 +264,27 @@ export default function Index() {
 
         {/* Sidebar - Desktop Only */}
         <div className="hidden flex-col gap-y-3 xl:flex">
-          {/* Metadata Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-x-3">
-              <h2 className="font-sans font-medium h2-core">Metadatos</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                0 claves
-              </Badge>
-            </div>
-            <Link to={`/categories/${category.id}/metadata/edit`}>
-              <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
-                <PencilSquare />
-              </Button>
-            </Link>
-          </div>
-
-          {/* JSON Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-x-4">
-              <h2 className="font-sans font-medium h2-core">JSON</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                {Object.keys(category).length} claves
-              </Badge>
-            </div>
-            <Button 
-              variant="transparent" 
-              size="small" 
-              className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle"
-            >
-              <PencilSquare />
-            </Button>
-          </div>
-        </div>
-
-        {/* SEO Section */}
-        <div className="flex w-full max-w-[100%] flex-col gap-y-3 xl:mt-0 xl:max-w-[440px]">
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
-            <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">SEO</h2>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              <div>
-                <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Keywords</p>
-                <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
-                  {category.meta_keywords || "No se han definido keywords"}
-                </p>
+          {/* SEO Section */}
+          <div className="flex w-full max-w-[100%] flex-col gap-y-3 xl:mt-0 xl:max-w-[440px]">
+            <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
+              <div className="flex items-center justify-between px-6 py-4">
+                <h2 className="font-sans font-medium h2-core">SEO</h2>
               </div>
-              <div>
-                <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Description</p>
-                <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
-                  {category.meta_description || "No se ha definido una descripción"}
-                </p>
+              <div className="px-6 py-4 space-y-4">
+                <div>
+                  <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Keywords</p>
+                  <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
+                    {category.meta_keywords || "No se han definido keywords"}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Description</p>
+                  <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
+                    {category.meta_description || "No se ha definido una descripción"}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Sidebar */}
-        <div className="flex flex-col gap-y-3 xl:hidden">
-          {/* Metadata Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-x-3">
-              <h2 className="font-sans font-medium h2-core">Metadatos</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                0 claves
-              </Badge>
-            </div>
-            <Link to={`/categories/${category.id}/metadata/edit`}>
-              <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
-                <PencilSquare />
-              </Button>
-            </Link>
-          </div>
-
-          {/* JSON Section */}
-          <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-x-4">
-              <h2 className="font-sans font-medium h2-core">JSON</h2>
-              <Badge 
-                variant="secondary" 
-                size="small"
-                className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
-              >
-                {Object.keys(category).length} claves
-              </Badge>
-            </div>
-            <Button 
-              variant="transparent" 
-              size="small" 
-              className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle"
-            >
-              <PencilSquare />
-            </Button>
           </div>
         </div>
       </div>
