@@ -3,9 +3,9 @@ const REMEMBER_ME_KEY = 'cpanel_admin_remember';
 const TOKEN_KEY = 'cpanel_admin_token';
 
 // Configuración API DecorLujo
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://decorlujo.com/server_api/api';
-const API_KEY = import.meta.env.VITE_API_KEY || '9c70933aff6b2a6d08c687a6cbb6b765';
-const STORE_ID = import.meta.env.VITE_STORE_ID || '1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
+const STORE_ID = import.meta.env.VITE_STORE_ID;
 
 // Debug: Verificar configuración
 console.log('Auth Service Config:', {
