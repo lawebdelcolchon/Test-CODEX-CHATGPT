@@ -1,33 +1,43 @@
-// src/features/customers/new.jsx
+// src/features/categories/new.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, FocusModal } from "@medusajs/ui";
+import { Button, Input, FocusModal, Textarea, Switch } from "@medusajs/ui";
 import { XMarkMini } from "@medusajs/icons";
+import categoriesData from "../../mocks/categories.json";
 
-export default function CustomersNew() {
+export default function New() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    company_name: "",
-    phone: ""
+    name: "",
+    meta_keywords: "",
+    meta_description: "",
+    parent: null,
+    position: 0,
+    visible: true,
+    active: true
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : (name === 'position' || name === 'parent') ? (value === '' ? null : parseInt(value)) : value
+    }));
+  };
+  
+  const handleSwitchChange = (name, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: checked
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Creating customer:", formData);
-    // Aquí iría la lógica para crear el cliente
+    console.log("Creating category:", formData);
+    // Aquí iría la lógica para crear la categoría
     // Por ahora solo cerramos el modal y navegamos de vuelta
     handleClose();
   };
@@ -39,7 +49,7 @@ export default function CustomersNew() {
   const handleClose = () => {
     setIsOpen(false);
     setTimeout(() => {
-      navigate("/customers", { replace: true });
+      navigate("/categories", { replace: true });
     }, 100);
   };
 
@@ -70,138 +80,185 @@ export default function CustomersNew() {
             <div className="flex w-full max-w-[720px] flex-col gap-y-8">
               {/* Title */}
               <div>
-                <h1 className="font-sans font-medium h1-core">Crear Cliente</h1>
+                <h1 className="font-sans font-medium h1-core">Crear Categoría</h1>
                 <p className="font-normal font-sans txt-small text-ui-fg-subtle">
-                  Crea un nuevo cliente y administra sus detalles.
+                  Crea una nueva categoría para organizar productos.
                 </p>
               </div>
 
               {/* Form Fields */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* First Name */}
+              <div className="flex flex-col gap-y-6">
+                {/* Name */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="first_name"
+                      htmlFor="name"
                     >
-                      Nombre
+                      Nombre de Categoría
                     </label>
-                    <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
-                      (Opcional)
-                    </p>
                   </div>
                   <div className="relative">
                     <Input
-                      id="first_name"
-                      name="first_name"
+                      id="name"
+                      name="name"
                       type="text"
-                      value={formData.first_name}
+                      value={formData.name}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-
-                {/* Last Name */}
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
-                      htmlFor="last_name"
-                    >
-                      Apellido
-                    </label>
-                    <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
-                      (Opcional)
-                    </p>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="last_name"
-                      name="last_name"
-                      type="text"
-                      value={formData.last_name}
-                      onChange={handleInputChange}
-                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
-                      htmlFor="email"
-                    >
-                      Correo electrónico
-                    </label>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                      autoComplete="off"
+                      placeholder="Ejemplo: Colchones"
                       required
+                      autoComplete="off"
                     />
                   </div>
                 </div>
 
-                {/* Company */}
+                {/* Grid for two-column layout */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Meta Keywords */}
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-x-1">
+                      <label 
+                        className="font-sans txt-compact-small font-medium" 
+                        htmlFor="meta_keywords"
+                      >
+                        Meta Keywords
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        (Opcional)
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="meta_keywords"
+                        name="meta_keywords"
+                        type="text"
+                        value={formData.meta_keywords}
+                        onChange={handleInputChange}
+                        className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                        placeholder="palabras, clave, separadas, por, comas"
+                        autoComplete="off"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Position */}
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center gap-x-1">
+                      <label 
+                        className="font-sans txt-compact-small font-medium" 
+                        htmlFor="position"
+                      >
+                        Posición
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        (Opcional)
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="position"
+                        name="position"
+                        type="number"
+                        value={formData.position || ''}
+                        onChange={handleInputChange}
+                        className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                        placeholder="0"
+                        min="0"
+                        autoComplete="off"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meta Description */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="company_name"
+                      htmlFor="meta_description"
                     >
-                      Compañía
+                      Meta Description
                     </label>
                     <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
                       (Opcional)
                     </p>
                   </div>
                   <div className="relative">
+                    <Textarea
+                      id="meta_description"
+                      name="meta_description"
+                      value={formData.meta_description}
+                      onChange={handleInputChange}
+                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small px-2 py-1.5 min-h-[80px]"
+                      placeholder="Descripción para motores de búsqueda"
+                    />
+                  </div>
+                </div>
+
+                {/* Parent Category */}
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-x-1">
+                    <label 
+                      className="font-sans txt-compact-small font-medium" 
+                      htmlFor="parent"
+                    >
+                      Categoría Padre
+                    </label>
+                    <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                      (Opcional - Dejar vacío para categoría raíz)
+                    </p>
+                  </div>
+                  <div className="relative">
                     <Input
-                      id="company_name"
-                      name="company_name"
-                      type="text"
-                      value={formData.company_name}
+                      id="parent"
+                      name="parent"
+                      type="number"
+                      value={formData.parent || ''}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                      placeholder="ID de la categoría padre"
+                      min="1"
                       autoComplete="off"
                     />
                   </div>
                 </div>
 
-                {/* Phone */}
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
-                      htmlFor="phone"
-                    >
-                      Teléfono
-                    </label>
-                    <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
-                      (Opcional)
-                    </p>
+                {/* Boolean Switches */}
+                <div className="flex flex-col gap-y-4">
+                  <h3 className="font-sans txt-compact-small font-medium text-ui-fg-base">
+                    Configuración
+                  </h3>
+                  
+                  {/* Visible */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <label className="font-sans txt-compact-small font-medium text-ui-fg-base">
+                        Visible
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        La categoría aparecerá en el sitio web
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.visible}
+                      onCheckedChange={(checked) => handleSwitchChange('visible', checked)}
+                    />
                   </div>
-                  <div className="relative">
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                      autoComplete="off"
+
+                  {/* Active */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <label className="font-sans txt-compact-small font-medium text-ui-fg-base">
+                        Activo
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        La categoría está habilitada para uso
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.active}
+                      onCheckedChange={(checked) => handleSwitchChange('active', checked)}
                     />
                   </div>
                 </div>

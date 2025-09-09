@@ -19,6 +19,8 @@ import PurchaseOrders from "./pages/PurchaseOrders.jsx";
 import Customers from "./pages/Customers.jsx";
 import CustomersIndex from "./features/customers/index.jsx";
 import CustomersNew from "./features/customers/new.jsx";
+import CategoriesIndex from "./features/categories/index.jsx";
+import CategoriesNew from "./features/categories/new.jsx";
 import CustomerGroups from "./pages/CustomerGroups.jsx";
 import Campaigns from "./pages/Campaigns.jsx";
 import PriceList from "./pages/PriceList.jsx";
@@ -59,6 +61,8 @@ export default function App() {
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<CustomersIndex />} />
         <Route path="customers/create" element={<CustomersNew />} />
+        <Route path="categories/:id" element={<CategoriesIndex />} />
+        <Route path="categories/create" element={<CategoriesNew />} />
         <Route path="customer-groups" element={<CustomerGroups />} />
         <Route path="campaigns" element={<Campaigns />} />
         <Route path="pricelist" element={<PriceList />} />

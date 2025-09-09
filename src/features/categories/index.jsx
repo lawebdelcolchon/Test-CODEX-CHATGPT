@@ -1,11 +1,11 @@
-// src/features/customers/index.jsx
+// src/features/categories/index.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button, DropdownMenu, Badge, Drawer, Input } from "@medusajs/ui";
+import { Button, DropdownMenu, Badge, Drawer, Input, Select, Textarea, Switch } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, ArrowLeft, XMarkMini } from "@medusajs/icons";
-import customersData from "../../mocks/customers.json";
+import categoriesData from "../../mocks/categories.json";
 
-export default function CustomersIndex() {
+export default function Index() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,16 +13,18 @@ export default function CustomersIndex() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [verificationText, setVerificationText] = useState("");
   
-  // Encontrar el cliente por ID
-  const customer = customersData.find(c => c.id === id) || customersData[0]; // fallback al primer cliente
+  // Encontrar la categoría por ID
+  const category = categoriesData.find(c => c.id === parseInt(id)) || categoriesData[0]; // fallback a la primera categoría
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
-    first_name: customer?.first_name || "",
-    last_name: customer?.last_name || "",
-    email: customer?.email || "",
-    company_name: customer?.company_name || "",
-    phone: customer?.phone || ""
+    name: category?.name || "",
+    meta_keywords: category?.meta_keywords || "",
+    meta_description: category?.meta_description || "",
+    parent: category?.parent || null,
+    position: category?.position || 0,
+    visible: Boolean(category?.visible),
+    active: Boolean(category?.active)
   });
   
   // Detectar si se debe abrir el drawer de edición o modal de eliminación desde URL
@@ -58,13 +60,15 @@ export default function CustomersIndex() {
   }, [isDeleteModalOpen]);
 
   const handleEdit = () => {
-    // Actualizar formData con datos actuales del customer
+    // Actualizar formData con datos actuales de la categoría
     setFormData({
-      first_name: customer?.first_name || "",
-      last_name: customer?.last_name || "",
-      email: customer?.email || "",
-      company_name: customer?.company_name || "",
-      phone: customer?.phone || ""
+      name: category?.name || "",
+      meta_keywords: category?.meta_keywords || "",
+      meta_description: category?.meta_description || "",
+      parent: category?.parent || null,
+      position: category?.position || 0,
+      visible: Boolean(category?.visible),
+      active: Boolean(category?.active)
     });
     setIsEditDrawerOpen(true);
   };
@@ -75,22 +79,29 @@ export default function CustomersIndex() {
   };
 
   const handleBack = () => {
-    navigate("/customers");
+    navigate("/categories");
   };
   
   // Funciones para el formulario de edición
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : (name === 'position' || name === 'parent') ? (value === '' ? null : parseInt(value)) : value
+    }));
+  };
+
+  const handleSwitchChange = (name, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: checked
     }));
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    console.log("Updating customer:", formData);
-    // Aquí iría la lógica para actualizar el cliente
+    console.log("Updating category:", formData);
+    // Aquí iría la lógica para actualizar la categoría
     setIsEditDrawerOpen(false);
   };
 
@@ -103,18 +114,18 @@ export default function CustomersIndex() {
     setVerificationText(e.target.value);
   };
   
-  const isDeleteEnabled = verificationText === customer?.email;
+  const isDeleteEnabled = verificationText === category?.name;
   
   const handleDeleteSubmit = (e) => {
     e.preventDefault();
     if (!isDeleteEnabled) return;
     
-    console.log("Deleting customer:", customer.id);
-    // Aquí iría la lógica para eliminar el cliente
+    console.log("Deleting category:", category.id);
+    // Aquí iría la lógica para eliminar la categoría
     setIsDeleteModalOpen(false);
     setVerificationText("");
-    // Navegar de vuelta a la lista de clientes
-    navigate("/customers");
+    // Navegar de vuelta a la lista de categorías
+    navigate("/categories");
   };
   
   const handleDeleteCancel = () => {
@@ -136,7 +147,7 @@ export default function CustomersIndex() {
         </DropdownMenu.Item>
         <DropdownMenu.Separator />
         <DropdownMenu.Item onClick={handleDelete} className="text-ui-fg-error">
-          Eliminar cliente
+          Eliminar categoría
         </DropdownMenu.Item>
       </DropdownMenu.Content>
     </DropdownMenu>
@@ -180,77 +191,84 @@ export default function CustomersIndex() {
         >
           <ArrowLeft />
         </Button>
-        <span className="text-ui-fg-muted txt-small">Volver a Clientes</span>
+        <span className="text-ui-fg-muted txt-small">Volver a Categorías</span>
       </div>
       
       <div className="flex w-full flex-col items-start gap-x-4 gap-y-3 xl:grid xl:grid-cols-[minmax(0,_1fr)_440px]">
         {/* Main Content */}
         <div className="flex w-full min-w-0 flex-col gap-y-3">
-          {/* Customer Header */}
+          {/* Category Header */}
           <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <h1 className="font-sans font-medium h1-core">{customer.email}</h1>
+              <h1 className="font-sans font-medium h1-core">{category.name}</h1>
               <div className="flex items-center gap-x-2">
                 <Badge 
-                  variant={customer.has_account ? "default" : "secondary"} 
+                  variant={category.active ? "default" : "secondary"} 
                   size="small"
                   className="txt-compact-xsmall-plus bg-ui-bg-subtle text-ui-fg-subtle border-ui-border-base box-border flex w-fit select-none items-center overflow-hidden rounded-md border pl-0 pr-1 leading-none"
                 >
-                  <div className="flex items-center justify-center w-5 h-[18px] [&_div]:w-2 [&_div]:h-2 [&_div]:rounded-sm [&_div]:bg-ui-tag-orange-icon">
+                  <div className="flex items-center justify-center w-5 h-[18px] [&_div]:w-2 [&_div]:h-2 [&_div]:rounded-sm [&_div]:bg-ui-tag-green-icon">
                     <div></div>
                   </div>
-                  {customer.has_account ? "Registrado" : "Invitado"}
+                  {category.active ? "Activo" : "Inactivo"}
                 </Badge>
                 <ActionsMenu />
               </div>
             </div>
             
             <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
-              <p className="font-medium font-sans txt-compact-small">Nombre</p>
+              <p className="font-medium font-sans txt-compact-small">ID</p>
               <p className="font-normal font-sans txt-compact-small">
-                {customer.first_name} {customer.last_name}
+                #{category.id}
               </p>
             </div>
             
             <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
-              <p className="font-medium font-sans txt-compact-small">Compañía</p>
+              <p className="font-medium font-sans txt-compact-small">Posición</p>
               <p className="font-normal font-sans txt-compact-small">
-                {customer.company_name || "-"}
+                {category.position || "-"}
               </p>
             </div>
             
             <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
-              <p className="font-medium font-sans txt-compact-small">Teléfono</p>
+              <p className="font-medium font-sans txt-compact-small">Visible</p>
               <p className="font-normal font-sans txt-compact-small">
-                {customer.phone || "-"}
+                {category.visible ? "Sí" : "No"}
+              </p>
+            </div>
+            
+            <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
+              <p className="font-medium font-sans txt-compact-small">Categoría Padre</p>
+              <p className="font-normal font-sans txt-compact-small">
+                {category.parent ? `#${category.parent}` : "Raíz"}
               </p>
             </div>
           </div>
 
-          {/* Orders Section */}
+          {/* Subcategories Section */}
           <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Pedidos</h2>
+              <h2 className="font-sans font-medium h2-core">Subcategorías</h2>
             </div>
             <EmptyState 
               title="No hay registros"
-              description="No hay registros para mostrar"
+              description="Esta categoría no tiene subcategorías."
             />
           </div>
 
-          {/* Customer Groups Section */}
+          {/* Products Section */}
           <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Grupos de Clientes</h2>
-              <Link to={`/customers/${customer.id}/add-customer-groups`}>
+              <h2 className="font-sans font-medium h2-core">Productos</h2>
+              <Link to={`/products?category=${category.id}`}>
                 <Button variant="secondary" size="small" className="txt-compact-small-plus gap-x-1.5 px-2 py-1">
-                  Agregar
+                  Ver productos
                 </Button>
               </Link>
             </div>
             <EmptyState 
               title="No hay registros"
-              description="Este cliente no pertenece a ningún grupo."
+              description="Esta categoría no tiene productos asignados."
             />
           </div>
         </div>
@@ -269,7 +287,7 @@ export default function CustomersIndex() {
                 0 claves
               </Badge>
             </div>
-            <Link to={`/customers/${customer.id}/metadata/edit`}>
+            <Link to={`/categories/${category.id}/metadata/edit`}>
               <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
                 <PencilSquare />
               </Button>
@@ -285,7 +303,7 @@ export default function CustomersIndex() {
                 size="small"
                 className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
               >
-                {Object.keys(customer).length} claves
+                {Object.keys(category).length} claves
               </Badge>
             </div>
             <Button 
@@ -298,23 +316,25 @@ export default function CustomersIndex() {
           </div>
         </div>
 
-        {/* Addresses Section */}
+        {/* SEO Section */}
         <div className="flex w-full max-w-[100%] flex-col gap-y-3 xl:mt-0 xl:max-w-[440px]">
           <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
             <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="font-sans font-medium h2-core">Direcciones</h2>
-              <Link 
-                to={`/customers/${customer.id}/create-address`}
-                className="text-ui-fg-muted text-xs"
-              >
-                Agregar
-              </Link>
+              <h2 className="font-sans font-medium h2-core">SEO</h2>
             </div>
-            <div className="w-full items-center justify-center gap-y-4 flex h-full flex-col overflow-hidden border-t p-6">
-              <EmptyState 
-                title="No hay registros"
-                description="No hay registros para mostrar"
-              />
+            <div className="px-6 py-4 space-y-4">
+              <div>
+                <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Keywords</p>
+                <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
+                  {category.meta_keywords || "No se han definido keywords"}
+                </p>
+              </div>
+              <div>
+                <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Description</p>
+                <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
+                  {category.meta_description || "No se ha definido una descripción"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -333,7 +353,7 @@ export default function CustomersIndex() {
                 0 claves
               </Badge>
             </div>
-            <Link to={`/customers/${customer.id}/metadata/edit`}>
+            <Link to={`/categories/${category.id}/metadata/edit`}>
               <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
                 <PencilSquare />
               </Button>
@@ -349,7 +369,7 @@ export default function CustomersIndex() {
                 size="small"
                 className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text [&_svg]:text-ui-tag-neutral-icon border-ui-tag-neutral-border inline-flex items-center gap-x-0.5 border box-border txt-compact-xsmall-plus h-5 rounded-full px-1.5"
               >
-                {Object.keys(customer).length} claves
+                {Object.keys(category).length} claves
               </Badge>
             </div>
             <Button 
@@ -370,7 +390,7 @@ export default function CustomersIndex() {
             {/* Header */}
             <div className="border-ui-border-base flex items-center justify-between border-b px-6 py-4">
               <div className="flex flex-col gap-y-1">
-                <h1 className="font-sans font-medium h1-core">Editar Cliente</h1>
+                <h1 className="font-sans font-medium h1-core">Editar Categoría</h1>
               </div>
               <div className="flex items-center gap-x-2">
                 <kbd className="bg-ui-tag-neutral-bg text-ui-tag-neutral-text border-ui-tag-neutral-border inline-flex h-5 w-fit min-w-[20px] items-center justify-center rounded-md border px-1 txt-compact-xsmall-plus">
@@ -391,22 +411,22 @@ export default function CustomersIndex() {
             {/* Content */}
             <div className="flex-1 px-6 py-4">
               <div className="flex flex-col gap-y-4">
-                {/* Email */}
+                {/* Name */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="edit_email"
+                      htmlFor="edit_name"
                     >
-                      Correo electrónico
+                      Nombre
                     </label>
                   </div>
                   <div className="relative">
                     <Input
-                      id="edit_email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
+                      id="edit_name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
                       required
@@ -414,90 +434,130 @@ export default function CustomersIndex() {
                   </div>
                 </div>
 
-                {/* First Name */}
+                {/* Meta Keywords */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="edit_first_name"
+                      htmlFor="edit_meta_keywords"
                     >
-                      Nombre
+                      Meta Keywords
                     </label>
                   </div>
                   <div className="relative">
                     <Input
-                      id="edit_first_name"
-                      name="first_name"
+                      id="edit_meta_keywords"
+                      name="meta_keywords"
                       type="text"
-                      value={formData.first_name}
+                      value={formData.meta_keywords}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                      placeholder="palabras, clave, separadas, por, comas"
                     />
                   </div>
                 </div>
 
-                {/* Last Name */}
+                {/* Meta Description */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="edit_last_name"
+                      htmlFor="edit_meta_description"
                     >
-                      Apellido
+                      Meta Description
                     </label>
                   </div>
                   <div className="relative">
-                    <Input
-                      id="edit_last_name"
-                      name="last_name"
-                      type="text"
-                      value={formData.last_name}
+                    <Textarea
+                      id="edit_meta_description"
+                      name="meta_description"
+                      value={formData.meta_description}
                       onChange={handleInputChange}
-                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                      className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small px-2 py-1.5 min-h-[80px]"
+                      placeholder="Descripción para motores de búsqueda"
                     />
                   </div>
                 </div>
 
-                {/* Company */}
+                {/* Position */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="edit_company_name"
+                      htmlFor="edit_position"
                     >
-                      Compañía
+                      Posición
                     </label>
                   </div>
                   <div className="relative">
                     <Input
-                      id="edit_company_name"
-                      name="company_name"
-                      type="text"
-                      value={formData.company_name}
+                      id="edit_position"
+                      name="position"
+                      type="number"
+                      value={formData.position || ''}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                      placeholder="0"
+                      min="0"
                     />
                   </div>
                 </div>
 
-                {/* Phone */}
+                {/* Parent Category */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
                     <label 
                       className="font-sans txt-compact-small font-medium" 
-                      htmlFor="edit_phone"
+                      htmlFor="edit_parent"
                     >
-                      Teléfono
+                      Categoría Padre
                     </label>
                   </div>
                   <div className="relative">
                     <Input
-                      id="edit_phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
+                      id="edit_parent"
+                      name="parent"
+                      type="number"
+                      value={formData.parent || ''}
                       onChange={handleInputChange}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+                      placeholder="ID de la categoría padre (vacío para raíz)"
+                      min="1"
+                    />
+                  </div>
+                </div>
+
+                {/* Switches for boolean fields */}
+                <div className="flex flex-col gap-y-3">
+                  {/* Visible */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <label className="font-sans txt-compact-small font-medium text-ui-fg-base">
+                        Visible
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        La categoría aparecerá en el sitio web
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.visible}
+                      onCheckedChange={(checked) => handleSwitchChange('visible', checked)}
+                    />
+                  </div>
+
+                  {/* Active */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <label className="font-sans txt-compact-small font-medium text-ui-fg-base">
+                        Activo
+                      </label>
+                      <p className="font-normal font-sans txt-compact-small text-ui-fg-muted">
+                        La categoría está habilitada para uso
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.active}
+                      onCheckedChange={(checked) => handleSwitchChange('active', checked)}
                     />
                   </div>
                 </div>
@@ -542,10 +602,10 @@ export default function CustomersIndex() {
               {/* Header */}
               <div className="flex flex-col gap-y-1 px-6 pt-6">
                 <h2 className="font-sans font-medium h2-core text-ui-fg-base">
-                  Eliminar Cliente
+                  Eliminar Categoría
                 </h2>
                 <p className="text-ui-fg-subtle txt-compact-medium">
-                  Estás a punto de eliminar al cliente {customer?.email}. Esta acción no puede deshacerse.
+                  Estás a punto de eliminar la categoría "{category?.name}". Esta acción no puede deshacerse.
                 </p>
               </div>
               
@@ -557,7 +617,7 @@ export default function CustomersIndex() {
                 >
                   Por favor escribe{" "}
                   <span className="text-ui-fg-base txt-compact-medium-plus">
-                    {customer?.email}
+                    {category?.name}
                   </span>{" "}
                   para confirmar:
                 </label>
@@ -569,7 +629,7 @@ export default function CustomersIndex() {
                     value={verificationText}
                     onChange={handleVerificationChange}
                     className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                    placeholder={customer?.email}
+                    placeholder={category?.name}
                     autoComplete="off"
                   />
                 </div>

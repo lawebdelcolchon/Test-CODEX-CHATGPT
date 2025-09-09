@@ -5,7 +5,7 @@ import { Button, DropdownMenu, Badge, Drawer, Input } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, ArrowLeft, XMarkMini } from "@medusajs/icons";
 import customersData from "../../mocks/customers.json";
 
-export default function CustomersIndex() {
+export default function Index() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

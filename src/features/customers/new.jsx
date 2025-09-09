@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input, FocusModal } from "@medusajs/ui";
 import { XMarkMini } from "@medusajs/icons";
 
-export default function CustomersNew() {
+export default function New() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   
