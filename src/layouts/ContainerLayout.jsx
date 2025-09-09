@@ -5,7 +5,7 @@ import Table from "../components/Table.jsx";
 import { DropdownMenu, IconButton, Button } from "@medusajs/ui"
 import { ArrowUpDown } from "@medusajs/icons"
 
-export default function Container({ entityName, columnsData, orderKeys = [], DataSet, emptyMessage = "No se encontraron resultados" }) {
+export default function Container({ entityName, columnsData, orderKeys = [], DataSet = [], reduxState = null, emptyMessage = "No se encontraron resultados" }) {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,12 +22,28 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
   const [directionOrder, setDirectionOrder] = useState("asc");
     
   useEffect(() => {
-    // Más adelante será un fetch
-    setTimeout(() => {
-      setData(DataSet);
-      setLoading(false);
-    }, 500);
-  }, [DataSet]);
+    if (reduxState) {
+      // Usar datos del estado de Redux
+      const { items, status, error } = reduxState;
+      
+      if (status === 'loading') {
+        setLoading(true);
+      } else if (status === 'succeeded') {
+        setData(items || []);
+        setLoading(false);
+      } else if (status === 'failed') {
+        console.error('Error loading data:', error);
+        setData([]);
+        setLoading(false);
+      }
+    } else {
+      // Fallback a usar DataSet (para compatibilidad)
+      setTimeout(() => {
+        setData(DataSet);
+        setLoading(false);
+      }, 500);
+    }
+  }, [DataSet, reduxState]);
 
   // Determinar columna a usar para ordenar
   const fieldAccessor = useMemo(() => {

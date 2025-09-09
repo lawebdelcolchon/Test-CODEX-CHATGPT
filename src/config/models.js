@@ -19,6 +19,7 @@ export const MODEL_CONFIG = {
     endpoints: {
       list: '/categories',
       get: '/categories/:id',
+      getById: '/categories/:id',
       create: '/categories',
       update: '/categories/:id',
       delete: '/categories/:id'

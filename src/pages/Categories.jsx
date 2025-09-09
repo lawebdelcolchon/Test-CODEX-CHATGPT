@@ -1,7 +1,9 @@
-// src/pages/Catetgories.jsx
+// src/pages/Categories.jsx
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import ContainerLayout from "../layouts/ContainerLayout.jsx";
-import DataSet from "../mocks/categories.json";
 import { useStatusBadge } from "../hooks/useStatusBadge.jsx";
+import { categoriesActions } from "../store/slices/index.js";
 
 // Componente separado para el StatusBadge
 function StatusBadge({ isActive }) {
@@ -9,6 +11,15 @@ function StatusBadge({ isActive }) {
 }
 
 export default function Categories() {
+  const dispatch = useDispatch();
+  const { items, status, error } = useSelector((state) => state.categories);
+
+  useEffect(() => {
+    // Cargar categorías al montar el componente
+    if (status === 'idle') {
+      dispatch(categoriesActions.fetchList());
+    }
+  }, [dispatch, status]);
 
   const columnsData = [
     {
@@ -40,7 +51,7 @@ export default function Categories() {
       entityName="categories"
       columnsData={columnsData}
       orderKeys={["Categoria", "Estado", "Fecha de Creación"]}
-      DataSet={DataSet}
+      reduxState={{ items, status, error }}
       emptyMessage="No se encontraron categorías"
     />
   );

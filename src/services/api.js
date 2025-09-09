@@ -3,6 +3,8 @@ import products from "../mocks/products.json";
 import orders from "../mocks/orders.json";
 import customers from "../mocks/customers.json";
 import categories from "../mocks/categories.json";
+import attributes from "../mocks/attributes.json";
+import options from "../mocks/options.json";
 import collections from "../mocks/collections.json";
 import suppliers from "../mocks/suppliers.json";
 import reserves from "../mocks/reserves.json";
@@ -15,6 +17,8 @@ const db = {
   orders,
   customers,
   categories,
+  attributes,
+  options,
   collections,
   suppliers,
   reserves,
