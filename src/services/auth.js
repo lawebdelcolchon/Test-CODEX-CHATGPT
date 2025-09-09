@@ -32,7 +32,7 @@ const getHeaders = (includeAuth = false) => {
   if (includeAuth) {
     const token = getStoredToken();
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`; // JWT para usuario
+      headers['Autorizacion'] = `Bearer ${token}`; // JWT para usuario (header específico de DecorLujo)
     }
   }
   
@@ -114,27 +114,15 @@ const apiRequest = async (endpoint, options = {}) => {
 };
 
 // Permisos basados en rol del backend DecorLujo
-const getRolePermissions = (role) => {
-  switch (role) {
-    case 'admin':
-    case 'administrator':
-      return ['all']; // Acceso total
-    
-    case 'super_admin':
-      return ['all', 'system']; // Super administrador
-    
-    case 'manager':
-      return ['products', 'orders', 'customers', 'inventory', 'reports'];
-    
-    case 'employee':
-    case 'user':
-      return ['products', 'orders', 'customers'];
-    
-    case 'cliente':
-    case 'customer':
-    default:
-      return ['profile']; // Solo su perfil
+const getRolePermissions = (userProfile) => {
+  // Si es admin o super_admin, dar acceso a todo
+  if (userProfile?.admin || userProfile?.super_admin) {
+    return ['all', 'categories', 'products', 'orders', 'customers', 'inventory', 'reports', 'settings'];
   }
+  
+  // Para usuarios normales, usar permisos limitados pero incluir categories para testing
+  // TEMPORAL: Agregar categories para testing
+  return ['products', 'orders', 'customers', 'categories'];
 };
 
 export const login = async (user, password, rememberMe = false) => {
@@ -157,9 +145,11 @@ export const login = async (user, password, rememberMe = false) => {
   // Procesar respuesta de DecorLujo
   if (result.success && result.data.status === 'success') {
     const user = result.data.data.user; // Estructura correcta: data.data.user
-    const token = result.data.token;
+    const token = result.data.data.token || result.data.token; // Buscar token en ambas ubicaciones
     
+    console.log('🔍 AUTH SERVICE: Full API response:', result.data);
     console.log('👤 AUTH SERVICE: User data from API:', user);
+    console.log('🎫 AUTH SERVICE: Token from API:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
     
     // Preparar datos para localStorage
     const userData = {
@@ -172,7 +162,7 @@ export const login = async (user, password, rememberMe = false) => {
       store_name: user.store?.name || 'Unknown Store', // Nombre de la tienda
       avatar: user.avatar || null,                    // Avatar del usuario
       profile: user.profile,                          // Perfil completo
-      permissions: getRolePermissions(user.profile?.admin ? 'admin' : 'user'), // Permisos basados en rol
+      permissions: getRolePermissions(user.profile), // Permisos basados en profile completo
       loginTime: new Date().toISOString(),            // Timestamp para expiración
     };
     
@@ -238,6 +228,12 @@ export const isRemembered = () => {
 
 export const hasPermission = (permission) => {
   const user = getUser();
+  
+  // Si los permisos están deshabilitados, permitir acceso
+  if (import.meta.env.VITE_ENABLE_PERMISSIONS !== '1') {
+    return true;
+  }
+  
   if (!user || !user.permissions) return false;
   
   return user.permissions.includes('all') || user.permissions.includes(permission);

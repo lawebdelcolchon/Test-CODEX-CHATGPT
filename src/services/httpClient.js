@@ -6,6 +6,20 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000');
 const TOKEN_KEY = 'cpanel_admin_token';
 
+// Función para debuggear el token
+const debugToken = () => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const user = localStorage.getItem('cpanel_admin_user');
+  console.log('🔍 Token Debug:', {
+    tokenExists: !!token,
+    tokenLength: token ? token.length : 0,
+    tokenStart: token ? token.substring(0, 20) + '...' : 'No token',
+    userExists: !!user,
+    userInfo: user ? JSON.parse(user) : 'No user'
+  });
+  return token;
+};
+
 // Crear instancia de Axios
 const httpClient = axios.create({
   baseURL: API_BASE_URL,
@@ -20,23 +34,29 @@ const httpClient = axios.create({
 // Interceptor para agregar token de autenticación automáticamente
 httpClient.interceptors.request.use(
   (config) => {
-    // Obtener token del localStorage
-    const token = localStorage.getItem(TOKEN_KEY);
+    // Obtener token del localStorage con debugging
+    const token = debugToken();
     
     if (token) {
-      // Usar "Autorizacion" como especifica la API
+      // Usar "Autorizacion" como especifica la API DecorLujo
       config.headers['Autorizacion'] = `Bearer ${token}`;
+    } else {
+      console.warn('🔐 No authentication token found in localStorage[' + TOKEN_KEY + ']');
     }
     
     // Debug en desarrollo
     if (import.meta.env.DEV) {
       console.log('🚀 HTTP Request:', {
         method: config.method?.toUpperCase(),
-        url: config.url,
+        url: config.baseURL + config.url,
         headers: {
-          ...config.headers,
+          'Content-Type': config.headers['Content-Type'],
+          'Accept': config.headers['Accept'],
+          'X-API-KEY': config.headers['X-API-KEY'] ? config.headers['X-API-KEY'].substring(0, 8) + '...' : 'Missing',
           'Autorizacion': token ? `Bearer ${token.substring(0, 10)}...` : 'No token'
         },
+        hasToken: !!token,
+        tokenSource: 'localStorage[cpanel_admin_token]',
         data: config.data
       });
     }
@@ -79,12 +99,13 @@ httpClient.interceptors.response.use(
       // Manejar errores específicos
       switch (status) {
         case 401:
-          // Token expirado o inválido - redirigir a login
-          console.warn('🔐 Authentication error - redirecting to login');
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem('cpanel_admin_user');
-          // Puedes agregar aquí lógica para redirigir al login
-          window.location.href = '/login';
+          // Token expirado o inválido - NO redirigir automáticamente
+          console.warn('🔐 Authentication error - Token invalid or expired');
+          console.warn('🔍 Current token:', localStorage.getItem(TOKEN_KEY) ? 'Present' : 'Missing');
+          // NO removemos el token ni redirigimos automáticamente para debugging
+          // localStorage.removeItem(TOKEN_KEY);
+          // localStorage.removeItem('cpanel_admin_user');
+          // window.location.href = '/login';
           break;
           
         case 403:
