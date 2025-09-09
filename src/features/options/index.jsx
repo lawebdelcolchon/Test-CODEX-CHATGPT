@@ -1,48 +1,50 @@
-// src/features/categories/index.jsx
+// src/features/options/index.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Badge, Button, Select, Textarea, Switch } from "@medusajs/ui";
-import categoriesData from "../../mocks/categories.json";
+import optionsData from "../../mocks/options.json";
 import DataLayout from "../../layouts/DataLayout.jsx";
 
-export default function CategoryDetail() {
+export default function OptionDetail() {
   const { id } = useParams();
   
-  // Encontrar la categoría por ID
-  const category = categoriesData.find(c => c.id === parseInt(id)) || categoriesData[0]; // fallback a la primera categoría
+  // Encontrar la opción por ID
+  const option = optionsData.find(o => o.id === parseInt(id)) || optionsData[0]; // fallback a la primera opción
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
-    name: category?.name || "",
-    meta_keywords: category?.meta_keywords || "",
-    meta_description: category?.meta_description || "",
-    parent: category?.parent || null,
-    position: category?.position || 0,
-    visible: Boolean(category?.visible),
-    active: Boolean(category?.active)
+    name: option?.name || "",
+    utilities: option?.utilities || "",
+    caption: option?.caption || "",
+    observations: option?.observations || "",
+    id_category: option?.id_category || null,
+    position: option?.position || 0,
+    active: Boolean(option?.active)
   });
   
-  // Update formData when category changes
+  // Update formData when option changes
   useEffect(() => {
-    if (category) {
+    if (option) {
       setFormData({
-        name: category?.name || "",
-        meta_keywords: category?.meta_keywords || "",
-        meta_description: category?.meta_description || "",
-        parent: category?.parent || null,
-        position: category?.position || 0,
-        visible: Boolean(category?.visible),
-        active: Boolean(category?.active)
+        name: option?.name || "",
+        utilities: option?.utilities || "",
+        caption: option?.caption || "",
+        observations: option?.observations || "",
+        id_category: option?.id_category || null,
+        position: option?.position || 0,
+        active: Boolean(option?.active)
       });
     }
-  }, [category]);
+  }, [option]);
   
   // Input change handler
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (name === 'position' || name === 'parent') ? (value === '' ? null : parseInt(value)) : value
+      [name]: type === 'checkbox' ? checked : 
+              (name === 'position' || name === 'id_category') ? 
+              (value === '' ? null : parseInt(value)) : value
     }));
   };
 
@@ -58,18 +60,18 @@ export default function CategoryDetail() {
     onEdit: () => {
       // Refresh formData when edit starts
       setFormData({
-        name: category?.name || "",
-        meta_keywords: category?.meta_keywords || "",
-        meta_description: category?.meta_description || "",
-        parent: category?.parent || null,
-        position: category?.position || 0,
-        visible: Boolean(category?.visible),
-        active: Boolean(category?.active)
+        name: option?.name || "",
+        utilities: option?.utilities || "",
+        caption: option?.caption || "",
+        observations: option?.observations || "",
+        id_category: option?.id_category || null,
+        position: option?.position || 0,
+        active: Boolean(option?.active)
       });
     },
     onDelete: (entity) => {
       // Handle delete logic here if needed
-      console.log("Custom delete logic for category:", entity);
+      console.log("Custom delete logic for option:", entity);
     }
   };
   
@@ -103,23 +105,30 @@ export default function CategoryDetail() {
       </div>
       
       <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
+        <p className="font-medium font-sans txt-compact-small">Utilidades</p>
+        <p className="font-normal font-sans txt-compact-small">
+          {entity.utilities || "-"}
+        </p>
+      </div>
+      
+      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
         <p className="font-medium font-sans txt-compact-small">Posición</p>
         <p className="font-normal font-sans txt-compact-small">
-          {entity.position || "-"}
+          {entity.position || "0"}
         </p>
       </div>
       
       <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
-        <p className="font-medium font-sans txt-compact-small">Visible</p>
+        <p className="font-medium font-sans txt-compact-small">Caption</p>
         <p className="font-normal font-sans txt-compact-small">
-          {entity.visible ? "Sí" : "No"}
+          {entity.caption || "Sin caption"}
         </p>
       </div>
       
       <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
-        <p className="font-medium font-sans txt-compact-small">Categoría Padre</p>
+        <p className="font-medium font-sans txt-compact-small">ID Categoría</p>
         <p className="font-normal font-sans txt-compact-small">
-          {entity.parent ? `#${entity.parent}` : "Raíz"}
+          {entity.id_category ? `#${entity.id_category}` : "Sin categoría"}
         </p>
       </div>
     </>
@@ -127,11 +136,27 @@ export default function CategoryDetail() {
   
   const renderMainSections = ({ EmptyState, entity, Link, Button }) => (
     <>
+      {/* Values Section */}
+      <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
+        <div className="flex items-center justify-between px-6 py-4">
+          <h2 className="font-sans font-medium h2-core">Valores de la Opción</h2>
+          <Link to={`/option-values/create?option=${entity.id}`}>
+            <Button variant="secondary" size="small" className="txt-compact-small-plus gap-x-1.5 px-2 py-1">
+              Agregar valor
+            </Button>
+          </Link>
+        </div>
+        <EmptyState 
+          title="No hay registros"
+          description="Esta opción no tiene valores configurados."
+        />
+      </div>
+
       {/* Products Section */}
       <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <h2 className="font-sans font-medium h2-core">Productos</h2>
-          <Link to={`/products?category=${entity.id}`}>
+          <h2 className="font-sans font-medium h2-core">Productos Relacionados</h2>
+          <Link to={`/products?option=${entity.id}`}>
             <Button variant="secondary" size="small" className="txt-compact-small-plus gap-x-1.5 px-2 py-1">
               Ver productos
             </Button>
@@ -139,23 +164,7 @@ export default function CategoryDetail() {
         </div>
         <EmptyState 
           title="No hay registros"
-          description="Esta categoría no tiene productos asignados."
-        />
-      </div>
-
-      {/* Subcategories Section */}
-      <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg divide-y p-0">
-        <div className="flex items-center justify-between px-6 py-4">
-          <h2 className="font-sans font-medium h2-core">Subcategorías</h2>
-          <Link to={`/categories/create?parent=${entity.id}`}>
-            <Button variant="secondary" size="small" className="txt-compact-small-plus gap-x-1.5 px-2 py-1">
-              Crear subcategoría
-            </Button>
-          </Link>
-        </div>
-        <EmptyState 
-          title="No hay registros"
-          description="Esta categoría no tiene subcategorías."
+          description="Esta opción no está asignada a ningún producto."
         />
       </div>
     </>
@@ -163,11 +172,28 @@ export default function CategoryDetail() {
   
   const renderSidebar = ({ entity, Link, Button, Badge, PencilSquare, mobile = false }) => (
     <>
-      {/* SEO Section */}
+      {/* Observations Section */}
       <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <h2 className="font-sans font-medium h2-core">SEO</h2>
-          <Link to={`/categories/${entity.id}/seo/edit`}>
+          <h2 className="font-sans font-medium h2-core">Observaciones</h2>
+          <Link to={`/options/${entity.id}/observations/edit`}>
+            <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
+              <PencilSquare />
+            </Button>
+          </Link>
+        </div>
+        <div className="px-6 py-4">
+          <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle whitespace-pre-line">
+            {entity.observations || "Sin observaciones"}
+          </p>
+        </div>
+      </div>
+      
+      {/* Configuration Section */}
+      <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg p-0">
+        <div className="flex items-center justify-between px-6 py-4">
+          <h2 className="font-sans font-medium h2-core">Configuración</h2>
+          <Link to={`/options/${entity.id}/config/edit`}>
             <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
               <PencilSquare />
             </Button>
@@ -175,21 +201,33 @@ export default function CategoryDetail() {
         </div>
         <div className="px-6 py-4 space-y-4">
           <div>
-            <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Keywords</p>
+            <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Fecha de Creación</p>
             <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
-              {entity.meta_keywords || "No se han definido keywords"}
+              {entity.created_at ? new Date(entity.created_at).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : "Fecha no disponible"}
             </p>
           </div>
           <div>
-            <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Meta Description</p>
+            <p className="font-medium font-sans txt-compact-small text-ui-fg-base mb-1">Última Actualización</p>
             <p className="font-normal font-sans txt-compact-small text-ui-fg-subtle">
-              {entity.meta_description || "No se ha definido una descripción"}
+              {entity.updated_at ? new Date(entity.updated_at).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : "Nunca actualizada"}
             </p>
           </div>
         </div>
       </div>
       
-      {/* Metadata Section */}
+      {/* Metadatos Section */}
       <div className="shadow-elevation-card-rest bg-ui-bg-base w-full rounded-lg px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-x-3">
           <h2 className="font-sans font-medium h2-core">Metadatos</h2>
@@ -201,7 +239,7 @@ export default function CategoryDetail() {
             0 claves
           </Badge>
         </div>
-        <Link to={`/categories/${entity.id}/metadata/edit`}>
+        <Link to={`/options/${entity.id}/metadata/edit`}>
           <Button variant="transparent" size="small" className="h-7 w-7 p-1 text-ui-fg-muted hover:text-ui-fg-subtle">
             <PencilSquare />
           </Button>
@@ -235,6 +273,50 @@ export default function CategoryDetail() {
         </div>
       </div>
 
+      {/* Utilities */}
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center gap-x-1">
+          <label 
+            className="font-sans txt-compact-small font-medium" 
+            htmlFor="edit_utilities"
+          >
+            Utilidades
+          </label>
+        </div>
+        <div className="relative">
+          <Input
+            id="edit_utilities"
+            name="utilities"
+            type="text"
+            value={formData.utilities}
+            onChange={onInputChange}
+            className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+          />
+        </div>
+      </div>
+
+      {/* Caption */}
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center gap-x-1">
+          <label 
+            className="font-sans txt-compact-small font-medium" 
+            htmlFor="edit_caption"
+          >
+            Caption
+          </label>
+        </div>
+        <div className="relative">
+          <Input
+            id="edit_caption"
+            name="caption"
+            type="text"
+            value={formData.caption}
+            onChange={onInputChange}
+            className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+          />
+        </div>
+      </div>
+
       {/* Position */}
       <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-x-1">
@@ -253,104 +335,59 @@ export default function CategoryDetail() {
             value={formData.position || ""}
             onChange={onInputChange}
             className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+            min="0"
           />
         </div>
       </div>
 
-      {/* Parent Category */}
+      {/* ID Category */}
       <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-x-1">
           <label 
             className="font-sans txt-compact-small font-medium" 
-            htmlFor="edit_parent"
+            htmlFor="edit_id_category"
           >
-            Categoría Padre
-          </label>
-        </div>
-        <div className="relative">
-          <Select
-            value={formData.parent || ""}
-            onValueChange={(value) => handleInputChange({ 
-              target: { 
-                name: 'parent', 
-                value: value === "" ? null : parseInt(value) 
-              } 
-            })}
-          >
-            <Select.Trigger className="w-full">
-              <Select.Value placeholder="Seleccionar categoría padre" />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="">Ninguna (Raíz)</Select.Item>
-              {categoriesData
-                .filter(cat => cat.id !== category?.id)
-                .map(cat => (
-                  <Select.Item key={cat.id} value={cat.id.toString()}>
-                    {cat.name}
-                  </Select.Item>
-                ))
-              }
-            </Select.Content>
-          </Select>
-        </div>
-      </div>
-
-      {/* Meta Keywords */}
-      <div className="flex flex-col space-y-2">
-        <div className="flex items-center gap-x-1">
-          <label 
-            className="font-sans txt-compact-small font-medium" 
-            htmlFor="edit_meta_keywords"
-          >
-            Meta Keywords
+            ID Categoría
           </label>
         </div>
         <div className="relative">
           <Input
-            id="edit_meta_keywords"
-            name="meta_keywords"
-            type="text"
-            value={formData.meta_keywords}
+            id="edit_id_category"
+            name="id_category"
+            type="number"
+            value={formData.id_category || ""}
             onChange={onInputChange}
             className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
+            min="1"
           />
         </div>
       </div>
 
-      {/* Meta Description */}
+      {/* Observations */}
       <div className="flex flex-col space-y-2">
         <div className="flex items-center gap-x-1">
           <label 
             className="font-sans txt-compact-small font-medium" 
-            htmlFor="edit_meta_description"
+            htmlFor="edit_observations"
           >
-            Meta Description
+            Observaciones
           </label>
         </div>
         <div className="relative">
           <Textarea
-            id="edit_meta_description"
-            name="meta_description"
-            value={formData.meta_description}
+            id="edit_observations"
+            name="observations"
+            value={formData.observations}
             onChange={onInputChange}
-            rows={3}
+            rows={4}
             className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small px-2 py-1.5"
+            placeholder="Notas adicionales sobre esta opción..."
           />
         </div>
       </div>
 
       {/* Switches */}
       <div className="flex flex-col gap-y-3">
-        <div className="flex items-center justify-between">
-          <label className="font-sans txt-compact-small font-medium">
-            Visible
-          </label>
-          <Switch
-            checked={formData.visible}
-            onCheckedChange={(checked) => onSwitchChange('visible', checked)}
-          />
-        </div>
-        
         <div className="flex items-center justify-between">
           <label className="font-sans txt-compact-small font-medium">
             Activo
@@ -366,10 +403,10 @@ export default function CategoryDetail() {
 
   return (
     <DataLayout
-      entityName="categories"
-      entityPluralName="Categorías"
-      data={categoriesData}
-      entity={category}
+      entityName="options"
+      entityPluralName="Opciones"
+      data={optionsData}
+      entity={option}
       formData={formData}
       setFormData={setFormData}
       onInputChange={handleInputChange}
@@ -379,8 +416,8 @@ export default function CategoryDetail() {
       renderSidebar={renderSidebar}
       renderEditForm={renderEditForm}
       deleteVerificationField="name"
-      editTitle="Editar Categoría"
-      deleteItemText="categoría"
+      editTitle="Editar Opción"
+      deleteItemText="opción"
       customHandlers={customHandlers}
     />
   );

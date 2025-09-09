@@ -4,8 +4,8 @@ import DataSet from "../mocks/categories.json";
 import { useStatusBadge } from "../hooks/useStatusBadge.jsx";
 
 // Componente separado para el StatusBadge
-function StatusBadge({ hasAccount }) {
-  return useStatusBadge(hasAccount, hasAccount ? "Activo" : "Inactivo");
+function StatusBadge({ isActive }) {
+  return useStatusBadge(isActive, isActive ? "Activo" : "Inactivo");
 }
 
 export default function Categories() {
@@ -22,7 +22,7 @@ export default function Categories() {
       label: "Estado",
       accessor: "active",
       render: (row) => (
-        <StatusBadge hasAccount={row.active} />
+        <StatusBadge isActive={row.active} />
       ),
     },
     {
