@@ -4,34 +4,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
 
 const menuItems = [
-  { 
-    name: "Dashboard", 
-    path: "/", 
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M1.944 8.167h5.778M1.944 5.056h5.778M1.944 1.944h8.89" />
-      </svg>
-    )
-  },
-  {
-    name: "Pedidos",
-    path: "/orders",
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <g clipPath="url(#a)">
-          <path fill="currentColor" fillRule="evenodd" d="M1.631.37a.75.75 0 0 0-.364 1.455l1.201.3a.14.14 0 0 1 .104.115l.238 1.615.005.038.663 4.501a1.862 1.862 0 0 0 .416 3.675h9.555a.75.75 0 0 0 0-1.5H3.894a.362.362 0 0 1 0-.722h.403a1 1 0 0 0 .083 0h7.095c.704 0 1.332-.45 1.556-1.121l1.184-3.555a1.64 1.64 0 0 0-1.555-2.157H4.202l-.146-.992A1.64 1.64 0 0 0 2.832.67zm2.792 4.144.564 3.833h6.488c.06 0 .114-.038.132-.094l1.185-3.556a.138.138 0 0 0-.132-.183zM3.227 14.653a1.111 1.111 0 1 0 0-2.222 1.111 1.111 0 0 0 0 2.222m10.445-1.111a1.111 1.111 0 1 1-2.223 0 1.111 1.111 0 0 1 2.223 0" clipRule="evenodd" />
-        </g>
-        <defs>
-          <clipPath id="a">
-            <path fill="#fff" d="M0 0h15v15H0z" />
-          </clipPath>
-        </defs>
-      </svg>
-    )
-  },
   {
     name: "Productos",
-    path: "/products",
+    path: "/management",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
         <g clipPath="url(#a)">
@@ -45,7 +20,6 @@ const menuItems = [
       </svg>
     ),
     submenu: [
-      { name: "Catálogo", path: "/products" },
       { name: "Categorías", path: "/categories" },
       { name: "Atributos", path: "/attributes" },
       { name: "Opciones", path: "/options" },
@@ -72,26 +46,6 @@ const menuItems = [
       { name: "Reservas", path: "/reserves" },
       { name: "Insumos", path: "/inputs" },
       { name: "Órdenes de Compra", path: "/purchase-orders" }
-    ]
-  },
-  {
-    name: "Clientes",
-    path: "/customers",
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" clipPath="url(#a)">
-          <path d="M4.701 6.854a1.722 1.722 0 1 0 0-3.444 1.722 1.722 0 0 0 0 3.444M8.024 12.772c.45-.151.715-.64.548-1.084a4.135 4.135 0 0 0-7.74 0c-.167.444.098.934.548 1.084a10.486 10.486 0 0 0 6.644 0M10.083 4.701a1.722 1.722 0 1 0 0-3.444 1.722 1.722 0 0 0 0 3.444M10.728 11.14a10.5 10.5 0 0 0 2.678-.521c.45-.15.714-.64.547-1.084a4.135 4.135 0 0 0-6.146-1.997" />
-        </g>
-        <defs>
-          <clipPath id="a">
-            <path fill="#fff" d="M0 0h15v15H0z" />
-          </clipPath>
-        </defs>
-      </svg>
-    ),
-    submenu: [
-      { name: "Clientes", path: "/customers" },
-      { name: "Grupos de clientes", path: "/customer-groups" }
     ]
   },
   {

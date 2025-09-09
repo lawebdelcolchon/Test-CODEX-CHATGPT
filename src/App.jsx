@@ -5,20 +5,14 @@ import DashboardLayout from "./layouts/DashboardLayout.jsx";
 import Login from "./pages/Login.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Logout from "./pages/Logout.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import Products from "./pages/Products.jsx";
 import Categories from "./pages/Categories.jsx";
 import Attributes from "./pages/Attributes.jsx";
 import Options from "./pages/Options.jsx";
-import Orders from "./pages/Orders.jsx";
 import Inventory from "./pages/Inventory.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
 import Reserves from "./pages/Reserves.jsx";
 import Inputs from "./pages/Inputs.jsx";
 import PurchaseOrders from "./pages/PurchaseOrders.jsx";
-import Customers from "./pages/Customers.jsx";
-import CustomersIndex from "./features/customers/index.jsx";
-import CustomersNew from "./features/customers/new.jsx";
 import CategoriesIndex from "./features/categories/index.jsx";
 import CategoriesNew from "./features/categories/new.jsx";
 import AttributesIndex from "./features/attributes/index.jsx";
@@ -51,9 +45,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
-        <Route path="orders" element={<Orders />} />
-        <Route path="products" element={<Products />} />
+        <Route index element={<Navigate to="/categories" />} />
         <Route path="categories" element={<Categories />} />
         <Route path="attributes" element={<Attributes />} />
         <Route path="options" element={<Options />} />
@@ -62,9 +54,6 @@ export default function App() {
         <Route path="reserves" element={<Reserves />} />
         <Route path="inputs" element={<Inputs />} />
         <Route path="purchase-orders" element={<PurchaseOrders />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="customers/:id" element={<CustomersIndex />} />
-        <Route path="customers/create" element={<CustomersNew />} />
         <Route path="categories/:id" element={<CategoriesIndex />} />
         <Route path="categories/create" element={<CategoriesNew />} />
         <Route path="attributes/:id" element={<AttributesIndex />} />
