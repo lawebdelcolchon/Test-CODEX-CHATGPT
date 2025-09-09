@@ -1,9 +1,8 @@
-// src/pages/Products.jsx
+// src/pages/Options.jsx
 import ContainerLayout from "../layouts/ContainerLayout.jsx";
-import DataSet from "../mocks/products.json";
 import { useStatusBadge } from "../hooks/useStatusBadge.jsx";
 
-export default function Products() {
+export default function Options() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

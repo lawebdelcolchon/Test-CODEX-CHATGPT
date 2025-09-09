@@ -8,8 +8,8 @@ export default function Login() {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({ 
-    email: "admin@cpanel.com", 
-    password: "admin123",
+    user: "", 
+    password: "",
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +18,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await dispatch(loginUser({
-        email: formData.email,
+        user: formData.user,
         password: formData.password,
         rememberMe: formData.rememberMe
       })).unwrap();
@@ -59,16 +59,14 @@ export default function Login() {
         <div className="flex w-full flex-col gap-y-3">
           <form className="flex w-full flex-col gap-y-6" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-y-4">
-              {/* Email Input */}
+              {/* User Input */}
               <div className="flex flex-col space-y-2">
                 <div className="relative">
                   <input
                     className="caret-ui-fg-base hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active disabled:text-ui-fg-disabled disabled:!bg-ui-bg-disabled disabled:placeholder-ui-fg-disabled disabled:cursor-not-allowed aria-[invalid=true]:!shadow-borders-error invalid:!shadow-borders-error [&::--webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden txt-compact-small h-8 px-2 py-1.5 bg-ui-bg-field-component"
-                    autoComplete="email"
-                    name="email"
-                    placeholder="Correo electrónico"
-                    type="email"
-                    value={formData.email}
+                    name="user"
+                    placeholder="Nombre de Usuario"
+                    value={formData.user}
                     onChange={handleChange}
                     required
                   />
@@ -116,18 +114,22 @@ export default function Login() {
                   </div>
                 </div>
               </div>
-
+            </div>
+            <div>
               {/* Remember Me Checkbox */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="rememberMe"
                   name="rememberMe"
                   checked={formData.rememberMe}
                   onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-ui-border-base rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-ui-border-base rounded flex-shrink-0"
                 />
-                <label htmlFor="rememberMe" className="txt-compact-small text-ui-fg-subtle">
+                <label 
+                  htmlFor="rememberMe" 
+                  className="text-sm text-ui-fg-base select-none cursor-pointer"
+                >
                   Recordarme
                 </label>
               </div>
@@ -146,7 +148,7 @@ export default function Login() {
               disabled={loading}
               className="transition-fg relative inline-flex items-center justify-center overflow-hidden rounded-md outline-none disabled:bg-ui-bg-disabled disabled:border-ui-border-base disabled:text-ui-fg-disabled disabled:shadow-buttons-neutral disabled:after:hidden after:transition-fg after:absolute after:inset-0 after:content-[''] shadow-buttons-inverted text-ui-contrast-fg-primary bg-ui-button-inverted after:button-inverted-gradient hover:bg-ui-button-inverted-hover hover:after:button-inverted-hover-gradient active:bg-ui-button-inverted-pressed active:after:button-inverted-pressed-gradient focus-visible:!shadow-buttons-inverted-focus txt-compact-small-plus gap-x-1.5 px-3 py-1.5 w-full"
             >
-              {loading ? 'Iniciando sesión...' : 'Continuar con Email'}
+              {loading ? 'Iniciando sesión...' : 'Continuar'}
             </button>
           </form>
         </div>
@@ -161,18 +163,6 @@ export default function Login() {
             Restablecer
           </Link>
         </span>
-
-        {/* Demo Credentials */}
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md w-full">
-          <h3 className="txt-compact-small font-semibold text-blue-800 mb-2">
-            Credenciales de prueba:
-          </h3>
-          <div className="txt-compact-small text-blue-700 space-y-1">
-            <p><strong>Admin:</strong> admin@cpanel.com / admin123</p>
-            <p><strong>Manager:</strong> manager@cpanel.com / manager123</p>
-            <p><strong>User:</strong> user@cpanel.com / user123</p>
-          </div>
-        </div>
       </div>
     </div>
   );

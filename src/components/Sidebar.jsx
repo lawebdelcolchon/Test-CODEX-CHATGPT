@@ -46,8 +46,9 @@ const menuItems = [
     ),
     submenu: [
       { name: "Catálogo", path: "/products" },
-      { name: "Colecciones", path: "/collections" },
-      { name: "Categorías", path: "/categories" }
+      { name: "Categorías", path: "/categories" },
+      { name: "Atributos", path: "/attributes" },
+      { name: "Opciones", path: "/options" },
     ]
   },
   {

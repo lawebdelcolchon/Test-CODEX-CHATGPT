@@ -7,9 +7,9 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Logout from "./pages/Logout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Products from "./pages/Products.jsx";
-import ProductInfo from "./pages/products/ProductInfo.jsx";
-import Collections from "./pages/Collections.jsx";
 import Categories from "./pages/Categories.jsx";
+import Attributes from "./pages/Attributes.jsx";
+import Options from "./pages/Options.jsx";
 import Orders from "./pages/Orders.jsx";
 import Inventory from "./pages/Inventory.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
@@ -48,9 +48,9 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="orders" element={<Orders />} />
         <Route path="products" element={<Products />} />
-        <Route path="products/:id" element={<ProductInfo />} />
-        <Route path="collections" element={<Collections />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="attributes" element={<Attributes />} />
+        <Route path="options" element={<Options />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="suppliers" element={<Suppliers />} />
         <Route path="reserves" element={<Reserves />} />

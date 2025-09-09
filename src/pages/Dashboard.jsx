@@ -17,26 +17,7 @@ export default function Dashboard() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card title="Últimos pedidos">
-        <Table
-          columns={[
-            { key: "id", title: "ID", dataIndex: "id" },
-            { key: "customer", title: "Cliente", dataIndex: "customer_name" },
-            { key: "total", title: "Total", dataIndex: "total" }
-          ]}
-          data={orders.items}
-        />
-      </Card>
-      <Card title="Productos recientes">
-        <Table
-          columns={[
-            { key: "sku", title: "SKU", dataIndex: "sku" },
-            { key: "name", title: "Nombre", dataIndex: "name" },
-            { key: "stock", title: "Stock", dataIndex: "stock" }
-          ]}
-          data={products.items}
-        />
-      </Card>
+      
     </div>
   );
 }

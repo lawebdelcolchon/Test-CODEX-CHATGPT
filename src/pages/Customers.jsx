@@ -4,7 +4,7 @@ import DataSet from "../mocks/customers.json";
 import { useStatusBadge } from "../hooks/useStatusBadge.jsx";
 
 // Componente separado para el StatusBadge de customers
-function CustomerStatusBadge({ hasAccount }) {
+function StatusBadge({ hasAccount }) {
   return useStatusBadge(hasAccount, hasAccount ? "Activo" : "Inactivo");
 }
 
@@ -51,7 +51,7 @@ export default function Customers() {
       label: "Estado",
       accessor: "has_account",
       render: (row) => (
-        <CustomerStatusBadge hasAccount={row.has_account} />
+        <StatusBadge hasAccount={row.has_account} />
       ),
     },
     { 

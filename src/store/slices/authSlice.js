@@ -4,9 +4,11 @@ import * as authService from "../../services/auth";
 // Async thunks
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password, rememberMe }, { rejectWithValue }) => {
+  async ({ user, password, rememberMe }, { rejectWithValue }) => {
+    console.log('🎡 REDUX SLICE: loginUser thunk called with:', { user, rememberMe });
     try {
-      const response = await authService.login(email, password, rememberMe);
+      console.log('🔄 REDUX SLICE: Calling authService.login...');
+      const response = await authService.login(user, password, rememberMe);
       if (response.success) {
         return response.user;
       } else {
