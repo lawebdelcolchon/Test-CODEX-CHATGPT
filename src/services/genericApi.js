@@ -32,7 +32,26 @@ class GenericApiService {
       // Normalizar la respuesta para que sea compatible con el formato esperado
       const data = response.data;
       
-      // Si la respuesta tiene formato de paginación Laravel
+      console.log('🗺️ GenericAPI: Raw response structure:', {
+        hasData: !!data.data,
+        hasDataItems: !!data.data?.items,
+        hasDataPagination: !!data.data?.pagination,
+        itemsLength: data.data?.items?.length || 0
+      });
+      
+      // Si la respuesta tiene formato de DecorLujo con data.data.items
+      if (data.data && data.data.items && Array.isArray(data.data.items)) {
+        const pagination = data.data.pagination || {};
+        return {
+          items: data.data.items,
+          total: pagination.total || data.data.items.length,
+          page: pagination.current_page || params.page || 1,
+          pageSize: pagination.per_page || params.pageSize || 20,
+          totalPages: pagination.last_page || Math.ceil((pagination.total || data.data.items.length) / (params.pageSize || 20))
+        };
+      }
+      
+      // Si la respuesta tiene formato de paginación Laravel estándar (data.data es array)
       if (data.data && Array.isArray(data.data)) {
         return {
           items: data.data,
