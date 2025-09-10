@@ -1,13 +1,31 @@
 // src/features/categories/new.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, FocusModal, Textarea, Switch } from "@medusajs/ui";
+import { Button, Input, FocusModal, Textarea, Switch, toast } from "@medusajs/ui";
 import { XMarkMini } from "@medusajs/icons";
-import categoriesData from "../../mocks/categories.json";
+import genericApi from "../../services/genericApi.js";
+import { hasPermission } from "../../utils/permissions.js";
+import { useSelector } from "react-redux";
 
 export default function New() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Servicio API genérico (instancia compartida)
+  const apiService = genericApi;
+  
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canCreate = hasPermission(user, ['all', 'categories']);
+  
+  // Verificar permisos al cargar el componente
+  useEffect(() => {
+    if (!canCreate) {
+      console.warn('🚫 Usuario no tiene permisos para crear categorías');
+      navigate('/categories', { replace: true });
+    }
+  }, [canCreate, navigate]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -34,12 +52,66 @@ export default function New() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Creating category:", formData);
-    // Aquí iría la lógica para crear la categoría
-    // Por ahora solo cerramos el modal y navegamos de vuelta
-    handleClose();
+    
+    // Verificar permisos antes de proceder
+    if (!canCreate) {
+      console.warn('🚫 Usuario no tiene permisos para crear categorías');
+      toast.error('No tienes permisos para crear categorías');
+      return;
+    }
+    
+    // Evitar envíos duplicados
+    if (isLoading) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Preparar datos para enviar a la API
+      const categoryData = {
+        name: formData.name.trim(),
+        meta_keywords: formData.meta_keywords?.trim() || null,
+        meta_description: formData.meta_description?.trim() || null,
+        parent: formData.parent || null,
+        position: formData.position || 0,
+        visible: Boolean(formData.visible),
+        active: Boolean(formData.active)
+      };
+      
+      console.log('✨ Creating category:', categoryData);
+      
+      // Llamar a la API para crear la categoría
+      const newCategory = await apiService.create('categories', categoryData);
+      
+      console.log('✅ Category created successfully:', newCategory);
+      
+      // Mostrar mensaje de éxito
+      toast.success('Categoría creada exitosamente');
+      
+      // Cerrar modal y navegar de vuelta
+      handleClose();
+      
+    } catch (error) {
+      console.error('❌ Error creating category:', error);
+      
+      // Mostrar mensaje de error específico
+      if (error.validationErrors) {
+        // Errores de validación del servidor
+        const errorMessages = Object.values(error.validationErrors)
+          .flat()
+          .join(', ');
+        toast.error(`Error de validación: ${errorMessages}`);
+      } else if (error.message) {
+        // Error genérico con mensaje
+        toast.error(error.message);
+      } else {
+        // Error genérico
+        toast.error('Error al crear la categoría. Intenta de nuevo.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -105,6 +177,7 @@ export default function New() {
                       type="text"
                       value={formData.name}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
                       placeholder="Ejemplo: Colchones"
                       required
@@ -135,6 +208,7 @@ export default function New() {
                         type="text"
                         value={formData.meta_keywords}
                         onChange={handleInputChange}
+                        disabled={isLoading}
                         className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
                         placeholder="palabras, clave, separadas, por, comas"
                         autoComplete="off"
@@ -162,6 +236,7 @@ export default function New() {
                         type="number"
                         value={formData.position || ''}
                         onChange={handleInputChange}
+                        disabled={isLoading}
                         className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
                         placeholder="0"
                         min="0"
@@ -190,6 +265,7 @@ export default function New() {
                       name="meta_description"
                       value={formData.meta_description}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small px-2 py-1.5 min-h-[80px]"
                       placeholder="Descripción para motores de búsqueda"
                     />
@@ -216,6 +292,7 @@ export default function New() {
                       type="number"
                       value={formData.parent || ''}
                       onChange={handleInputChange}
+                      disabled={isLoading}
                       className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
                       placeholder="ID de la categoría padre"
                       min="1"
@@ -243,6 +320,7 @@ export default function New() {
                     <Switch
                       checked={formData.visible}
                       onCheckedChange={(checked) => handleSwitchChange('visible', checked)}
+                      disabled={isLoading}
                     />
                   </div>
 
@@ -259,6 +337,7 @@ export default function New() {
                     <Switch
                       checked={formData.active}
                       onCheckedChange={(checked) => handleSwitchChange('active', checked)}
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -274,6 +353,7 @@ export default function New() {
                 variant="secondary" 
                 size="small"
                 onClick={handleCancel}
+                disabled={isLoading}
                 className="txt-compact-small-plus gap-x-1.5 px-2 py-1"
               >
                 Cancelar
@@ -282,9 +362,10 @@ export default function New() {
                 type="submit"
                 variant="primary" 
                 size="small"
+                disabled={isLoading || !formData.name.trim()}
                 className="shadow-buttons-inverted text-ui-contrast-fg-primary bg-ui-button-inverted txt-compact-small-plus gap-x-1.5 px-2 py-1"
               >
-                Crear
+                {isLoading ? 'Creando...' : 'Crear'}
               </Button>
             </div>
           </div>

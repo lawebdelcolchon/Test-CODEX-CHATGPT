@@ -2,37 +2,75 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Badge, Button, Select, Textarea, Switch } from "@medusajs/ui";
-import categoriesData from "../../mocks/categories.json";
+import genericApi from "../../services/genericApi.js";
 import DataLayout from "../../layouts/DataLayout.jsx";
+import { hasPermission } from "../../utils/permissions.js";
+import { useSelector } from "react-redux";
 
 export default function CategoryDetail() {
   const { id } = useParams();
   
-  // Encontrar la categoría por ID
-  const category = categoriesData.find(c => c.id === parseInt(id)) || categoriesData[0]; // fallback a la primera categoría
+  // Estados para carga de datos
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [category, setCategory] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canEdit = hasPermission(user, ['all', 'categories']);
+  const canDelete = hasPermission(user, ['all', 'categories']);
+  
+  // Cargar categorías desde la API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setIsLoading(true);
+        // Intentar cargar desde la API primero
+        const response = await genericApi.list('categories', { page: 1, pageSize: 100 });
+        setCategoriesData(response.items || []);
+        console.log('✅ Categories loaded from API:', response.items?.length);
+      } catch (error) {
+        console.warn('⚠️ Failed to load categories from API:', error);
+        // En caso de error, mantener array vacío
+        setCategoriesData([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadCategories();
+  }, []);
+  
+  // Buscar la categoría por ID cuando cambien los datos
+  useEffect(() => {
+    if (categoriesData.length > 0) {
+      const foundCategory = categoriesData.find(c => String(c.id) === String(id)) || categoriesData[0];
+      setCategory(foundCategory);
+    }
+  }, [categoriesData, id]);
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
-    name: category?.name || "",
-    meta_keywords: category?.meta_keywords || "",
-    meta_description: category?.meta_description || "",
-    parent: category?.parent || null,
-    position: category?.position || 0,
-    visible: Boolean(category?.visible),
-    active: Boolean(category?.active)
+    name: "",
+    meta_keywords: "",
+    meta_description: "",
+    parent: null,
+    position: 0,
+    visible: true,
+    active: true
   });
   
-  // Update formData when category changes
+  // Update formData when category is loaded
   useEffect(() => {
     if (category) {
       setFormData({
-        name: category?.name || "",
-        meta_keywords: category?.meta_keywords || "",
-        meta_description: category?.meta_description || "",
-        parent: category?.parent || null,
-        position: category?.position || 0,
-        visible: Boolean(category?.visible),
-        active: Boolean(category?.active)
+        name: category.name || "",
+        meta_keywords: category.meta_keywords || "",
+        meta_description: category.meta_description || "",
+        parent: category.parent || null,
+        position: category.position || 0,
+        visible: Boolean(category.visible),
+        active: Boolean(category.active)
       });
     }
   }, [category]);
@@ -53,9 +91,13 @@ export default function CategoryDetail() {
     }));
   };
   
-  // Custom handlers
+  // Custom handlers con verificación de permisos
   const customHandlers = {
     onEdit: () => {
+      if (!canEdit) {
+        console.warn('🚫 Usuario no tiene permisos para editar categorías');
+        return;
+      }
       // Refresh formData when edit starts
       setFormData({
         name: category?.name || "",
@@ -68,6 +110,10 @@ export default function CategoryDetail() {
       });
     },
     onDelete: (entity) => {
+      if (!canDelete) {
+        console.warn('🚫 Usuario no tiene permisos para eliminar categorías');
+        return;
+      }
       // Handle delete logic here if needed
       console.log("Custom delete logic for category:", entity);
     }
@@ -269,11 +315,11 @@ export default function CategoryDetail() {
         </div>
         <div className="relative">
           <Select
-            value={formData.parent || ""}
+            value={formData.parent?.toString() || "none"}
             onValueChange={(value) => handleInputChange({ 
               target: { 
                 name: 'parent', 
-                value: value === "" ? null : parseInt(value) 
+                value: value === "none" ? null : parseInt(value) 
               } 
             })}
           >
@@ -281,7 +327,7 @@ export default function CategoryDetail() {
               <Select.Value placeholder="Seleccionar categoría padre" />
             </Select.Trigger>
             <Select.Content>
-              <Select.Item value="">Ninguna (Raíz)</Select.Item>
+              <Select.Item value="none">Ninguna (Raíz)</Select.Item>
               {categoriesData
                 .filter(cat => cat.id !== category?.id)
                 .map(cat => (
@@ -363,6 +409,20 @@ export default function CategoryDetail() {
       </div>
     </div>
   );
+
+  // Mostrar loading mientras se cargan los datos
+  if (isLoading || !category) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" role="status" aria-label="loading">
+            <span className="sr-only">Cargando...</span>
+          </div>
+          <p className="mt-2 text-ui-fg-muted">Cargando categoría...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DataLayout

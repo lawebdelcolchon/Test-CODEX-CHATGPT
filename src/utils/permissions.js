@@ -15,7 +15,7 @@ const PERMISSIONS_ENABLED = import.meta.env.VITE_ENABLE_PERMISSIONS === '1' ||
 export const hasPermission = (user, requiredPermissions) => {
   // Si los permisos están deshabilitados, permitir acceso a todos
   if (!PERMISSIONS_ENABLED) {
-    console.log('🔓 Permissions disabled - allowing access to all users');
+    //console.log('🔓 Permissions disabled - allowing access to all users');
     return true;
   }
 

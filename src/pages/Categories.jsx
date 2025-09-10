@@ -17,7 +17,7 @@ export default function Categories() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   // Verificar permisos usando el nuevo sistema
-  const userHasAccess = hasPermission(user, 'categories');
+  const userHasAccess = hasPermission(user, ['all', 'categories']);
 
   useEffect(() => {
     // Cargar categorías solo si el usuario está autenticado y tiene permisos

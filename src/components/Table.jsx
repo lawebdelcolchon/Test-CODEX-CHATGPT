@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Table } from "@medusajs/ui"
 import { Button, DropdownMenu } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, } from "@medusajs/icons";
+import { hasPermission } from "../utils/permissions.js";
+import { useSelector } from "react-redux";
 
 export default function DataTable({
   columns = [],
@@ -10,12 +12,18 @@ export default function DataTable({
   onEdit,
   onDelete,
   onView,
-  emptyMessage = "No hay datos para mostrar"
+  emptyMessage = "No hay datos para mostrar",
+  requiredPermissions = [] // Array de permisos requeridos para editar/eliminar
  }) {
 
   const [openRowId, setOpenRowId] = useState(null); // ✅ Guardamos el ID del row abierto
   const dropdownRef = useRef(null);
-  const ActionsMenu = () => (
+  
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canEdit = hasPermission(user, requiredPermissions.length > 0 ? requiredPermissions : ['all']);
+  const canDelete = hasPermission(user, requiredPermissions.length > 0 ? requiredPermissions : ['all']);
+  const ActionsMenu = ({ row }) => (
     <DropdownMenu>
       <DropdownMenu.Trigger asChild>
         <Button
@@ -32,14 +40,23 @@ export default function DataTable({
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content align="end">
-        <DropdownMenu.Item onClick={onEdit}>
-          <PencilSquare className="mr-2" />
-          Editar
-        </DropdownMenu.Item>
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item onClick={onDelete} className="text-ui-fg-error">
-          Eliminar
-        </DropdownMenu.Item>
+        {canEdit && (
+          <DropdownMenu.Item onClick={() => onEdit(row)}>
+            <PencilSquare className="mr-2" />
+            Editar
+          </DropdownMenu.Item>
+        )}
+        {canEdit && canDelete && <DropdownMenu.Separator />}
+        {canDelete && (
+          <DropdownMenu.Item onClick={() => onDelete(row)} className="text-ui-fg-error">
+            Eliminar
+          </DropdownMenu.Item>
+        )}
+        {!canEdit && !canDelete && (
+          <DropdownMenu.Item disabled>
+            Sin permisos
+          </DropdownMenu.Item>
+        )}
       </DropdownMenu.Content>
     </DropdownMenu>
   );
@@ -99,7 +116,7 @@ export default function DataTable({
               <Table.Cell className="px-2 py-2 whitespace-nowrap text-right text-sm font-medium">
 
                 <div className="relative" ref={dropdownRef}>
-                  <ActionsMenu />
+                  <ActionsMenu row={row} />
                 </div>
               </Table.Cell>
             </Table.Row>

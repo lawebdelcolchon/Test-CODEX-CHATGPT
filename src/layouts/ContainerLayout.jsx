@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import Table from "../components/Table.jsx";
 import { DropdownMenu, IconButton, Button } from "@medusajs/ui"
 import { ArrowUpDown } from "@medusajs/icons"
+import { hasPermission } from "../utils/permissions.js";
+import { useSelector } from "react-redux";
 
 export default function Container({ entityName, columnsData, orderKeys = [], DataSet = [], reduxState = null, emptyMessage = "No se encontraron resultados" }) {
   const navigate = useNavigate();
@@ -12,6 +14,10 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
   const [q, setQ] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  // Obtener usuario y verificar permisos para la entidad actual
+  const { user } = useSelector((state) => state.auth);
+  const requiredPermissions = entityName === 'categories' ? ['all', 'categories'] : ['all'];
   
   // Obtener las claves de ordenamiento, usando las etiquetas de columnas como fallback
   const availableOrderKeys = useMemo(() => {
@@ -248,6 +254,7 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
               fieldOrder={fieldOrder}
               directionOrder={directionOrder}
               emptyMessage={emptyMessage}
+              requiredPermissions={requiredPermissions}
             />
 
             {/* Paginación */}

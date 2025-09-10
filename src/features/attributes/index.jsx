@@ -343,11 +343,11 @@ export default function AttributeDetail() {
         </div>
         <div className="relative">
           <Select
-            value={formData.parent || ""}
+            value={formData.parent?.toString() || "none"}
             onValueChange={(value) => handleInputChange({ 
               target: { 
                 name: 'parent', 
-                value: value === "" ? null : parseInt(value) 
+                value: value === "none" ? null : parseInt(value) 
               } 
             })}
           >
@@ -355,7 +355,7 @@ export default function AttributeDetail() {
               <Select.Value placeholder="Seleccionar atributo padre" />
             </Select.Trigger>
             <Select.Content>
-              <Select.Item value="">Ninguno (Raíz)</Select.Item>
+              <Select.Item value="none">Ninguno (Raíz)</Select.Item>
               {attributesData
                 .filter(attr => attr.id !== attribute?.id)
                 .map(attr => (
