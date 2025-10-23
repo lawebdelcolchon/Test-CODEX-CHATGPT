@@ -50,7 +50,8 @@ function CategoryActions({ category, onEdit, onDelete }) {
         <div className="absolute right-0 top-full z-50 mt-1 min-w-[120px] overflow-hidden rounded-md bg-ui-bg-base shadow-elevation-flyout border border-ui-border-base">
           <div className="p-1">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onEdit(category);
                 setIsOpen(false);
               }}
@@ -62,7 +63,8 @@ function CategoryActions({ category, onEdit, onDelete }) {
               Editar
             </button>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onDelete(category);
                 setIsOpen(false);
               }}
@@ -292,15 +294,13 @@ export default function CategoryTable({ categories = [], onEdit, onDelete }) {
               
               {/* Columna Acciones */}
               <td className="h-12 py-0 pl-0 pr-6 !pl-0 !pr-0">
-                <a className="size-full outline-none" data-row-link="true" tabIndex="-1" href={`/categories/${child.id}`}>
-                  <div className="flex size-full items-center pr-6">
-                    <CategoryActions
-                      category={child}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                </a>
+                <div className="flex size-full items-center pr-6">
+                  <CategoryActions
+                    category={child}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                </div>
               </td>
             </tr>
           );

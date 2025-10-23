@@ -11,14 +11,14 @@ export default function New() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Servicio API genérico (instancia compartida)
   const apiService = genericApi;
-  
+
   // Obtener usuario y verificar permisos
   const { user } = useSelector((state) => state.auth);
   const canCreate = hasPermission(user, ['all', 'categories']);
-  
+
   // Verificar permisos al cargar el componente
   useEffect(() => {
     if (!canCreate) {
@@ -26,7 +26,7 @@ export default function New() {
       navigate('/categories', { replace: true });
     }
   }, [canCreate, navigate]);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     meta_keywords: "",
@@ -44,7 +44,7 @@ export default function New() {
       [name]: type === 'checkbox' ? checked : (name === 'position' || name === 'parent') ? (value === '' ? null : parseInt(value)) : value
     }));
   };
-  
+
   const handleSwitchChange = (name, checked) => {
     setFormData(prev => ({
       ...prev,
@@ -54,20 +54,20 @@ export default function New() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Verificar permisos antes de proceder
     if (!canCreate) {
       console.warn('🚫 Usuario no tiene permisos para crear categorías');
       toast.error('No tienes permisos para crear categorías');
       return;
     }
-    
+
     // Evitar envíos duplicados
     if (isLoading) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Preparar datos para enviar a la API
       const categoryData = {
         name: formData.name.trim(),
@@ -78,23 +78,32 @@ export default function New() {
         visible: Boolean(formData.visible),
         active: Boolean(formData.active)
       };
-      
+
       console.log('✨ Creating category:', categoryData);
-      
+
       // Llamar a la API para crear la categoría
       const newCategory = await apiService.create('categories', categoryData);
-      
+
       console.log('✅ Category created successfully:', newCategory);
-      
+
       // Mostrar mensaje de éxito
       toast.success('Categoría creada exitosamente');
-      
-      // Cerrar modal y navegar de vuelta
-      handleClose();
-      
+
+      // Cerrar modal y navegar a la nueva categoría
+      setIsOpen(false);
+      setTimeout(() => {
+        // Si la API devuelve el ID de la nueva categoría, navegar a ella
+        if (newCategory && newCategory.id) {
+          navigate(`/categories/${newCategory.id}`, { replace: true });
+        } else {
+          // Si no hay ID, navegar de vuelta a la lista
+          navigate("/categories", { replace: true });
+        }
+      }, 100);
+
     } catch (error) {
       console.error('❌ Error creating category:', error);
-      
+
       // Mostrar mensaje de error específico
       if (error.validationErrors) {
         // Errores de validación del servidor
@@ -132,10 +141,10 @@ export default function New() {
           {/* Header */}
           <div className="border-ui-border-base flex items-center justify-between gap-x-4 border-b px-4 py-2">
             <div className="flex items-center gap-x-2">
-              <Button 
-                type="button" 
-                variant="transparent" 
-                size="small" 
+              <Button
+                type="button"
+                variant="transparent"
+                size="small"
                 onClick={handleClose}
                 className="h-7 w-7 p-1"
               >
@@ -163,8 +172,8 @@ export default function New() {
                 {/* Name */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
+                    <label
+                      className="font-sans txt-compact-small font-medium"
                       htmlFor="name"
                     >
                       Nombre de Categoría
@@ -191,8 +200,8 @@ export default function New() {
                   {/* Meta Keywords */}
                   <div className="flex flex-col space-y-2">
                     <div className="flex items-center gap-x-1">
-                      <label 
-                        className="font-sans txt-compact-small font-medium" 
+                      <label
+                        className="font-sans txt-compact-small font-medium"
                         htmlFor="meta_keywords"
                       >
                         Meta Keywords
@@ -219,8 +228,8 @@ export default function New() {
                   {/* Position */}
                   <div className="flex flex-col space-y-2">
                     <div className="flex items-center gap-x-1">
-                      <label 
-                        className="font-sans txt-compact-small font-medium" 
+                      <label
+                        className="font-sans txt-compact-small font-medium"
                         htmlFor="position"
                       >
                         Posición
@@ -249,8 +258,8 @@ export default function New() {
                 {/* Meta Description */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
+                    <label
+                      className="font-sans txt-compact-small font-medium"
                       htmlFor="meta_description"
                     >
                       Meta Description
@@ -275,8 +284,8 @@ export default function New() {
                 {/* Parent Category */}
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-x-1">
-                    <label 
-                      className="font-sans txt-compact-small font-medium" 
+                    <label
+                      className="font-sans txt-compact-small font-medium"
                       htmlFor="parent"
                     >
                       Categoría Padre
@@ -306,7 +315,7 @@ export default function New() {
                   <h3 className="font-sans txt-compact-small font-medium text-ui-fg-base">
                     Configuración
                   </h3>
-                  
+
                   {/* Visible */}
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
@@ -348,9 +357,9 @@ export default function New() {
           {/* Footer */}
           <div className="border-ui-border-base flex items-center justify-end gap-x-2 border-t p-4">
             <div className="flex items-center justify-end gap-x-2">
-              <Button 
-                type="button" 
-                variant="secondary" 
+              <Button
+                type="button"
+                variant="secondary"
                 size="small"
                 onClick={handleCancel}
                 disabled={isLoading}
@@ -358,9 +367,9 @@ export default function New() {
               >
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 type="submit"
-                variant="primary" 
+                variant="primary"
                 size="small"
                 disabled={isLoading || !formData.name.trim()}
                 className="shadow-buttons-inverted text-ui-contrast-fg-primary bg-ui-button-inverted txt-compact-small-plus gap-x-1.5 px-2 py-1"

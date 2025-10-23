@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, FocusModal, Textarea, Switch } from "@medusajs/ui";
 import { XMarkMini } from "@medusajs/icons";
-import optionsData from "../../mocks/options.json";
 
 export default function New() {
   const navigate = useNavigate();

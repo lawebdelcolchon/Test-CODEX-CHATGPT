@@ -1,5 +1,24 @@
 import httpClient, { buildEndpointUrl, buildQueryParams, requestWithRetry } from './httpClient.js';
 
+// Configuración mock
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+// Helper para generar datos mock de prueba
+const generateMockData = (modelName, count = 50) => {
+  const mockData = [];
+  for (let i = 1; i <= count; i++) {
+    mockData.push({
+      id: i,
+      name: `${modelName.slice(0, -1)} ${i}`,
+      created_at: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
+      updated_at: new Date().toISOString(),
+      active: Math.random() > 0.2
+    });
+  }
+  console.log(`🎭 Generated mock data for ${modelName}:`, mockData.length, 'items');
+  return mockData;
+};
+
 /**
  * Servicio API genérico que maneja operaciones CRUD para cualquier modelo
  * Estructura de endpoints: {BASE_URL}/api/{modelo}/{opciones}
@@ -18,6 +37,42 @@ class GenericApiService {
    * @returns {Promise} Respuesta con lista de elementos
    */
   async list(modelo, params = {}) {
+    // MODO MOCK: Usar datos simulados
+    if (USE_MOCK) {
+      console.log(`🎭 GenericAPI: Using MOCK data for ${modelo}`, params);
+      
+      try {
+        const mockData = generateMockData(modelo);
+        
+        // Aplicar filtros simples si se proporcionan
+        let filteredData = mockData;
+        
+        // Paginación
+        const page = parseInt(params.page) || 1;
+        const pageSize = parseInt(params.pageSize) || parseInt(params.per_page) || 20;
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        
+        const paginatedData = filteredData.slice(startIndex, endIndex);
+        
+        const result = {
+          items: paginatedData,
+          total: filteredData.length,
+          page: page,
+          pageSize: pageSize,
+          totalPages: Math.ceil(filteredData.length / pageSize)
+        };
+        
+        console.log(`✅ GenericAPI: Mock data returned for ${modelo}:`, result);
+        return result;
+        
+      } catch (error) {
+        console.error(`❌ GenericAPI: Error loading mock data for ${modelo}:`, error);
+        throw new Error(`Error cargando datos mock de ${modelo}: ${error.message}`);
+      }
+    }
+    
+    // MODO API REAL: Lógica original
     try {
       const endpoint = buildEndpointUrl(modelo);
       const queryString = buildQueryParams(params);
@@ -122,6 +177,35 @@ class GenericApiService {
    * @returns {Promise} Elemento creado
    */
   async create(modelo, payload) {
+    // MODO MOCK: Simular creación
+    if (USE_MOCK) {
+      console.log(`🎭 GenericAPI: MOCK Creating ${modelo}`, { payload });
+      
+      try {
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Generar ID único
+        const newId = Date.now();
+        
+        // Crear elemento simulado
+        const newElement = {
+          id: newId,
+          ...payload,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        console.log(`✅ GenericAPI: MOCK ${modelo} created successfully:`, newElement);
+        return newElement;
+        
+      } catch (error) {
+        console.error(`❌ GenericAPI: MOCK Error creating ${modelo}:`, error);
+        throw new Error(`Error simulando creación de ${modelo}: ${error.message}`);
+      }
+    }
+    
+    // MODO API REAL: Lógica original
     try {
       const endpoint = buildEndpointUrl(modelo);
       
@@ -177,6 +261,37 @@ class GenericApiService {
    * @returns {Promise} Elemento eliminado o confirmación
    */
   async remove(modelo, id) {
+    // MODO MOCK: Simular eliminación
+    if (USE_MOCK) {
+      console.log(`🎭 GenericAPI: MOCK Removing ${modelo} ${id}`);
+      
+      try {
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Verificar que el ID existe (simular)
+        if (!id) {
+          throw new Error('ID requerido para eliminar');
+        }
+        
+        // Confirmación simulada
+        const result = {
+          id: parseInt(id),
+          deleted: true,
+          message: `${modelo} eliminado correctamente`,
+          deleted_at: new Date().toISOString()
+        };
+        
+        console.log(`✅ GenericAPI: MOCK ${modelo} removed successfully:`, result);
+        return result;
+        
+      } catch (error) {
+        console.error(`❌ GenericAPI: MOCK Error removing ${modelo}:`, error);
+        throw new Error(`Error simulando eliminación de ${modelo}: ${error.message}`);
+      }
+    }
+    
+    // MODO API REAL: Lógica original
     try {
       const endpoint = buildEndpointUrl(modelo, id);
       

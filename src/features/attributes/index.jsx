@@ -2,14 +2,65 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Badge, Button, Select, Textarea, Switch } from "@medusajs/ui";
-import attributesData from "../../mocks/attributes.json";
 import DataLayout from "../../layouts/DataLayout.jsx";
+import { hasPermission } from "../../utils/permissions.js";
+import { useSelector } from "react-redux";
+import { 
+  useAttributesQuery,
+  useAttributeQuery,
+  useUpdateAttributeMutation, 
+  useDeleteAttributeMutation 
+} from "../../hooks/queries/useAttributes.js";
 
 export default function AttributeDetail() {
   const { id } = useParams();
+
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canEdit = hasPermission(user, ['all', 'attributes']);
+  const canDelete = hasPermission(user, ['all', 'attributes']);
+
+  // Usar TanStack Query para obtener datos
+  const { 
+    data: attributesResult, 
+    isLoading: isAttributesLoading 
+  } = useAttributesQuery({ page: 1, pageSize: 100 });
   
-  // Encontrar el atributo por ID
-  const attribute = attributesData.find(a => a.id === parseInt(id)) || attributesData[0]; // fallback al primer atributo
+  const { 
+    data: attribute, 
+    isLoading: isAttributeLoading,
+    error: attributeError 
+  } = useAttributeQuery(id);
+
+  // Extraer datos de atributos para el selector
+  const attributesData = attributesResult?.items || [];
+  const isLoading = isAttributesLoading || isAttributeLoading;
+
+  // Hooks de mutación
+  const updateAttributeMutation = useUpdateAttributeMutation({
+    onSuccess: (updatedAttribute) => {
+      console.log('✅ AttributeDetail: Atributo actualizado exitosamente:', updatedAttribute);
+    },
+    onError: (error) => {
+      console.error('❌ AttributeDetail: Error detallado al actualizar atributo:', error);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error response:', error.response?.data);
+      alert('Error al actualizar el atributo: ' + error.message);
+    }
+  });
+
+  const deleteAttributeMutation = useDeleteAttributeMutation({
+    onSuccess: (result, deletedId) => {
+      // Si el atributo eliminado era el que se estaba viendo, redirigir
+      if (String(deletedId) === String(id)) {
+        // Redirigir a la lista principal
+        window.location.href = '/attributes';
+      }
+    },
+    onError: (error) => {
+      alert('Error al eliminar el atributo: ' + error.message);
+    }
+  });
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
@@ -417,6 +468,55 @@ export default function AttributeDetail() {
     </div>
   );
 
+  const handleFormSubmit = (formData) => {
+    console.log('📋 AttributeDetail.handleFormSubmit INICIO', { formData, attribute });
+    
+    if (!attribute?.id) {
+      console.error('❌ AttributeDetail: No attribute ID found');
+      return Promise.reject(new Error('No se puede actualizar: ID del atributo no encontrado'));
+    }
+
+    return updateAttributeMutation.mutateAsync({ id: attribute.id, data: formData });
+  };
+
+  const handleDelete = (entity) => {
+    console.log('🗑️ AttributeDetail.handleDelete INICIO', { entity });
+    
+    if (!entity?.id) {
+      console.error('❌ AttributeDetail: No entity ID found for deletion');
+      return Promise.reject(new Error('No se puede eliminar: ID del atributo no encontrado'));
+    }
+
+    return deleteAttributeMutation.mutateAsync(entity.id);
+  };
+
+  // Mostrar loading si los datos están cargando
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Mostrar error si no se pudo cargar el atributo
+  if (attributeError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-error">Error al cargar el atributo: {attributeError.message}</div>
+      </div>
+    );
+  }
+
+  // Mostrar mensaje si no se encontró el atributo
+  if (!attribute) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Atributo no encontrado</div>
+      </div>
+    );
+  }
+
   return (
     <DataLayout
       entityName="attributes"
@@ -427,6 +527,8 @@ export default function AttributeDetail() {
       setFormData={setFormData}
       onInputChange={handleInputChange}
       onSwitchChange={handleSwitchChange}
+      onEditSubmit={handleFormSubmit}
+      onDelete={handleDelete}
       renderHeader={renderHeader}
       renderMainSections={renderMainSections}
       renderSidebar={renderSidebar}
@@ -435,6 +537,12 @@ export default function AttributeDetail() {
       editTitle="Editar Atributo"
       deleteItemText="atributo"
       customHandlers={customHandlers}
+      // Estados de loading y error
+      isLoading={updateAttributeMutation.isPending || deleteAttributeMutation.isPending}
+      permissions={{
+        canEdit,
+        canDelete
+      }}
     />
   );
 }

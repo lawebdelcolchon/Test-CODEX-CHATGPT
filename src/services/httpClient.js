@@ -122,6 +122,18 @@ httpClient.interceptors.response.use(
           
         case 500:
           console.error('💥 Server error');
+          console.error('🔥 ERROR 500 - DETALLES DEL SERVIDOR:', {
+            url: error.config?.url,
+            method: error.config?.method,
+            sentData: error.config?.data,
+            serverResponse: data,
+            serverMessage: data?.message || 'No message provided',
+            serverErrors: data?.errors || 'No errors provided',
+            serverData: data?.data || 'No data provided',
+            serverDebug: data?.debug || 'No debug info',
+            serverTrace: data?.trace || 'No trace provided',
+            fullErrorResponse: data
+          });
           break;
       }
       
@@ -159,7 +171,9 @@ export const buildQueryParams = (params = {}) => {
   Object.keys(params).forEach(key => {
     const value = params[key];
     if (value !== null && value !== undefined && value !== '') {
-      queryParams.append(key, value);
+      // Transformar pageSize a per_page para Laravel
+      const actualKey = key === 'pageSize' ? 'per_page' : key;
+      queryParams.append(actualKey, value);
     }
   });
   

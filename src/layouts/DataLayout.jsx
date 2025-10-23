@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, DropdownMenu, Badge, Drawer, Input } from "@medusajs/ui";
 import { EllipsisHorizontal, PencilSquare, ArrowLeft, XMarkMini } from "@medusajs/icons";
+import DeleteConfirmModal from "../components/DeleteConfirmModal.jsx";
 
 export default function DataLayout({
   // Data props
@@ -36,7 +37,6 @@ export default function DataLayout({
   const [searchParams, setSearchParams] = useSearchParams();
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [verificationText, setVerificationText] = useState("");
   
   // Detectar si se debe abrir el drawer de edición o modal de eliminación desde URL
   useEffect(() => {
@@ -47,52 +47,83 @@ export default function DataLayout({
     }
     if (searchParams.get('delete') === 'true') {
       setIsDeleteModalOpen(true);
-      setVerificationText(""); // Limpiar texto de verificación
       // Limpiar el parámetro de la URL
       setSearchParams({});
     }
   }, [searchParams, setSearchParams]);
   
-  // Manejar tecla ESC para cerrar el modal de eliminación
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isDeleteModalOpen) {
-        handleDeleteCancel();
-      }
-    };
-    
-    if (isDeleteModalOpen) {
-      document.addEventListener('keydown', handleEscape);
-    }
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isDeleteModalOpen]);
 
   const handleEdit = () => {
     if (customHandlers.onEdit) {
-      customHandlers.onEdit();
+      const result = customHandlers.onEdit();
+      // Si el customHandler devuelve false, no abrir el drawer
+      if (result === false) {
+        return;
+      }
     }
     setIsEditDrawerOpen(true);
   };
 
   const handleDelete = () => {
-    setVerificationText("");
     setIsDeleteModalOpen(true);
   };
 
   const handleBack = () => {
-    navigate(`/${entityName}`);
+    // Intentar recuperar el estado de paginación guardado
+    const savedListState = sessionStorage.getItem(`${entityName}_list_state`);
+    
+    if (savedListState) {
+      try {
+        const { page, pageSize, search, sort, order } = JSON.parse(savedListState);
+        console.log(`🔙 DataLayout: Navegando de vuelta a ${entityName} con estado:`, { page, pageSize, search, sort, order });
+        
+        // Construir la URL con los parámetros de estado
+        const params = new URLSearchParams();
+        if (page && page !== 1) params.set('page', page.toString());
+        if (pageSize && pageSize !== 10) params.set('pageSize', pageSize.toString());
+        if (search) params.set('search', search);
+        if (sort) params.set('sort', sort);
+        if (order) params.set('order', order);
+        
+        const queryString = params.toString();
+        const targetUrl = `/${entityName}${queryString ? `?${queryString}` : ''}`;
+        console.log(`🎯 DataLayout: Navegando a:`, targetUrl);
+        
+        navigate(targetUrl);
+        
+        // Limpiar el estado después de usarlo
+        setTimeout(() => {
+          sessionStorage.removeItem(`${entityName}_list_state`);
+        }, 100);
+      } catch (error) {
+        console.warn('Error parsing saved list state:', error);
+        navigate(`/${entityName}`);
+      }
+    } else {
+      navigate(`/${entityName}`);
+    }
   };
   
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    console.log(`Updating ${entityName}:`, formData);
+    console.log(`🔄 DataLayout.handleEditSubmit INICIO - ${entityName}:`, formData);
+    
     if (onFormSubmit) {
-      onFormSubmit(formData);
+      try {
+        console.log('🗣️ DataLayout.handleEditSubmit - Llamando a onFormSubmit...');
+        const result = await onFormSubmit(formData);
+        console.log('✅ DataLayout.handleEditSubmit - onFormSubmit ÉXITO:', result);
+        setIsEditDrawerOpen(false);
+      } catch (error) {
+        console.error('❌ DataLayout.handleEditSubmit - onFormSubmit ERROR:', error);
+        console.error('❌ DataLayout.handleEditSubmit - Manteniendo drawer abierto debido al error');
+        // No cerrar el drawer si hay error
+        // setIsEditDrawerOpen(false); // Comentado para mantener abierto
+      }
+    } else {
+      console.warn('⚠️ DataLayout.handleEditSubmit - No onFormSubmit provided');
+      setIsEditDrawerOpen(false);
     }
-    setIsEditDrawerOpen(false);
   };
 
   const handleEditCancel = () => {
@@ -100,28 +131,24 @@ export default function DataLayout({
   };
   
   // Funciones para el modal de eliminación
-  const handleVerificationChange = (e) => {
-    setVerificationText(e.target.value);
-  };
-  
-  const isDeleteEnabled = verificationText === entity?.[deleteVerificationField];
-  
-  const handleDeleteSubmit = (e) => {
-    e.preventDefault();
-    if (!isDeleteEnabled) return;
-    
+  const handleDeleteConfirm = async () => {
     console.log(`Deleting ${entityName}:`, entity.id);
-    if (customHandlers.onDelete) {
-      customHandlers.onDelete(entity);
+    try {
+      if (customHandlers.onDelete) {
+        await customHandlers.onDelete(entity);
+      }
+      setIsDeleteModalOpen(false);
+      // Solo navegar si no hubo errores - usar handleBack para preservar estado
+      handleBack();
+    } catch (error) {
+      console.error('Error during delete:', error);
+      // Mantener el modal abierto si hay error
+      // El error ya se maneja en el customHandler
     }
-    setIsDeleteModalOpen(false);
-    setVerificationText("");
-    navigate(`/${entityName}`);
   };
   
   const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false);
-    setVerificationText("");
   };
 
   const ActionsMenu = () => (
@@ -213,6 +240,10 @@ export default function DataLayout({
       
       {/* Edit Drawer */}
       <Drawer open={isEditDrawerOpen} onOpenChange={setIsEditDrawerOpen}>
+        <Drawer.Title className="sr-only">{editTitle}</Drawer.Title>
+        <Drawer.Description className="sr-only">
+          Formulario para editar la {deleteItemText.toLowerCase()}
+        </Drawer.Description>
         <Drawer.Content className="bg-ui-bg-base shadow-elevation-modal border-ui-border-base fixed inset-y-2 flex w-full flex-1 flex-col rounded-lg border outline-none max-sm:inset-x-2 max-sm:w-[calc(100%-16px)] sm:right-2 sm:max-w-[560px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-1/2 data-[state=open]:slide-in-from-right-1/2 duration-200">
           <form className="flex flex-1 flex-col" onSubmit={handleEditSubmit}>
             {/* Header */}
@@ -238,7 +269,7 @@ export default function DataLayout({
 
             {/* Content */}
             <div className="flex-1 px-6 py-4">
-              {renderEditForm({ formData, onInputChange, entity })}
+              {renderEditForm && renderEditForm({ formData, onInputChange, entity })}
             </div>
 
             {/* Footer */}
@@ -265,78 +296,15 @@ export default function DataLayout({
         </Drawer.Content>
       </Drawer>
       
-      {/* Delete Modal */}
-      {isDeleteModalOpen && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={handleDeleteCancel}
-        >
-          <div 
-            className="bg-ui-bg-base shadow-elevation-modal border-ui-border-base w-full max-w-md rounded-lg border outline-none m-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <form onSubmit={handleDeleteSubmit}>
-              {/* Header */}
-              <div className="flex flex-col gap-y-1 px-6 pt-6">
-                <h2 className="font-sans font-medium h2-core text-ui-fg-base">
-                  Eliminar {deleteItemText}
-                </h2>
-                <p className="text-ui-fg-subtle txt-compact-medium">
-                  Estás a punto de eliminar {deleteItemText.toLowerCase()} "{entity?.[deleteVerificationField]}". Esta acción no puede deshacerse.
-                </p>
-              </div>
-              
-              {/* Verification Section */}
-              <div className="border-ui-border-base mt-6 flex flex-col gap-y-4 border-y p-6">
-                <label 
-                  className="font-sans txt-compact-medium font-normal text-ui-fg-subtle" 
-                  htmlFor="verificationText"
-                >
-                  Por favor escribe{" "}
-                  <span className="text-ui-fg-base txt-compact-medium-plus">
-                    {entity?.[deleteVerificationField]}
-                  </span>{" "}
-                  para confirmar:
-                </label>
-                <div className="relative">
-                  <Input
-                    id="verificationText"
-                    name="verificationText"
-                    type="text"
-                    value={verificationText}
-                    onChange={handleVerificationChange}
-                    className="caret-ui-fg-base bg-ui-bg-field hover:bg-ui-bg-field-hover shadow-borders-base placeholder-ui-fg-muted text-ui-fg-base transition-fg relative w-full appearance-none rounded-md outline-none focus-visible:shadow-borders-interactive-with-active txt-compact-small h-8 px-2 py-1.5"
-                    placeholder={entity?.[deleteVerificationField]}
-                    autoComplete="off"
-                  />
-                </div>
-              </div>
-              
-              {/* Footer */}
-              <div className="flex items-center justify-end gap-x-2 p-6">
-                <Button 
-                  type="button" 
-                  variant="secondary" 
-                  size="small"
-                  onClick={handleDeleteCancel}
-                  className="txt-compact-small-plus gap-x-1.5 px-2 py-1"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit"
-                  variant="danger"
-                  size="small"
-                  disabled={!isDeleteEnabled}
-                  className="shadow-buttons-danger bg-ui-button-danger hover:bg-ui-button-danger-hover active:bg-ui-button-danger-pressed focus-visible:shadow-buttons-danger-focus txt-compact-small-plus gap-x-1.5 px-2 py-1"
-                >
-                  Eliminar
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal de confirmación de eliminación */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        entityName={deleteItemText}
+        entityValue={entity?.[deleteVerificationField]}
+        verificationField={deleteVerificationField}
+      />
     </div>
   );
 }

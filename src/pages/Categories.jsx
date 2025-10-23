@@ -1,10 +1,16 @@
 // src/pages/Categories.jsx
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import ContainerLayout from "../layouts/ContainerLayout.jsx";
+import React, { useState, useCallback } from "react";
+import ContainerLayoutV2 from "../layouts/ContainerLayoutV2.jsx";
 import { useStatusBadge } from "../hooks/useStatusBadge.jsx";
-import { categoriesActions } from "../store/slices/index.js";
 import { hasPermission } from "../utils/permissions.js";
+import { useSelector } from "react-redux";
+import {
+  useCategoriesQuery,
+  useDeleteCategoryMutation,
+  useCreateCategoryMutation
+} from "../hooks/queries/useCategories.js";
+import CreateCategoryModal from "../components/CreateCategoryModal.jsx";
+import { useCategoryEditModal } from "../contexts/CategoryEditModalContext.jsx";
 
 // Componente separado para el StatusBadge
 function StatusBadge({ isActive }) {
@@ -12,31 +18,32 @@ function StatusBadge({ isActive }) {
 }
 
 export default function Categories() {
-  const dispatch = useDispatch();
-  const { items, status, error } = useSelector((state) => state.categories);
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Usar el contexto global para el modal de edición
+  const { openEditModal } = useCategoryEditModal();
 
   // Verificar permisos usando el nuevo sistema
   const userHasAccess = hasPermission(user, ['all', 'categories']);
 
-  useEffect(() => {
-    // Cargar categorías solo si el usuario está autenticado y tiene permisos
-    if (isAuthenticated && userHasAccess && status === 'idle') {
-      console.log('📋 Loading categories for user:', {
-        user: user?.name || 'Unknown',
-        hasAccess: userHasAccess,
-        permissionsEnabled: import.meta.env.VITE_ENABLE_PERMISSIONS
-      });
-      dispatch(categoriesActions.fetchList());
-    } else if (!isAuthenticated) {
-      console.warn('🚫 User not authenticated, skipping categories load');
-    } else if (!userHasAccess) {
-      console.warn('🚧 User lacks permission for categories - but this should not happen with permissions disabled');
-    }
-  }, [dispatch, status, isAuthenticated, user, userHasAccess]);
+  // Handler para abrir/cerrar modal de creación
+  const handleOpenCreateModal = useCallback(() => {
+    setIsCreateModalOpen(true);
+  }, []);
+
+  const handleCloseCreateModal = useCallback(() => {
+    setIsCreateModalOpen(false);
+  }, []);
+
+  // Handler para modal de edición global
+  const handleOpenEditModal = useCallback((category) => {
+    console.log('🟢 Categories: Delegando apertura de modal al contexto global para categoría:', category);
+    openEditModal(category);
+  }, [openEditModal]);
 
   // Si no tiene permisos, mostrar mensaje (solo si los permisos están habilitados)
-  if (isAuthenticated && !userHasAccess) {
+  if (!userHasAccess) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <div className="mb-4">
@@ -79,13 +86,42 @@ export default function Categories() {
     },
   ];
 
+  // Personalizar el handler de nuevo
+  const handleNew = useCallback(() => {
+    handleOpenCreateModal();
+  }, [handleOpenCreateModal]);
+
+  // Personalizar el handler de edición
+  const handleEdit = useCallback((category) => {
+    handleOpenEditModal(category);
+  }, [handleOpenEditModal]);
+
   return (
-    <ContainerLayout
-      entityName="categories"
-      columnsData={columnsData}
-      orderKeys={["Categoria", "Estado", "Fecha de Creación"]}
-      reduxState={{ items, status, error }}
-      emptyMessage="No se encontraron categorías"
-    />
+    <>
+      <ContainerLayoutV2
+        resourceName="categories"
+        columnsData={columnsData}
+        orderKeys={["Categoria", "Estado", "Fecha de Creación"]}
+        emptyMessage="No se encontraron categorías"
+        useListQuery={useCategoriesQuery}
+        useDeleteMutation={useDeleteCategoryMutation}
+        requiredPermissions={['all', 'categories']}
+        defaultPageSize={20}
+        defaultSort={{ field: 'name', order: 'asc' }}
+        onNew={handleNew} // Sobreescribir el comportamiento del botón Nuevo
+        onEdit={handleEdit} // Sobreescribir el comportamiento del botón Editar
+      />
+
+      {/* Modal de creación */}
+      <CreateCategoryModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreateModal}
+        onSuccess={() => {
+          console.log('✅ Categoría creada exitosamente');
+          // No es necesario refrescar manualmente ya que
+          // el hook useCreateCategoryMutation se encarga de invalidar las queries
+        }}
+      />
+    </>
   );
 }

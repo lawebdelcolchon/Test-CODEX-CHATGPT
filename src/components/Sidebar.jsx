@@ -5,6 +5,26 @@ import { logoutUser } from '../store/slices/authSlice';
 
 const menuItems = [
   {
+    name: "Entidades",
+    path: "/entities",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M7.5 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 13.333c0-2.757 2.239-5 5-5s5 2.243 5 5M11.25 5.417a1.667 1.667 0 1 0 0-3.334 1.667 1.667 0 0 0 0 3.334zM13.333 13.333c0-1.841-1.492-3.333-3.333-3.333M3.75 5.417a1.667 1.667 0 1 1 0-3.334 1.667 1.667 0 0 1 0 3.334zM5 10c-1.841 0-3.333 1.492-3.333 3.333" />
+        </g>
+      </svg>
+    ),
+    submenu: [
+      { name: "Tiendas", path: "/stores" },
+      { name: "Clientes", path: "/clients" },
+      { name: "Afiliados", path: "/affiliates" },
+      { name: "Marketplace", path: "/marketplace" },
+      { name: "Contactos", path: "/contacts" },
+      { name: "Proveedores", path: "/suppliers" },
+      { name: "Depósitos", path: "/deposits" }
+    ]
+  },
+  {
     name: "Productos",
     path: "/management",
     icon: (
@@ -20,9 +40,11 @@ const menuItems = [
       </svg>
     ),
     submenu: [
+      { name: "Productos", path: "/products" },
       { name: "Categorías", path: "/categories" },
       { name: "Atributos", path: "/attributes" },
       { name: "Opciones", path: "/options" },
+      { name: "Etiquetas", path: "/product-tags" },
     ]
   },
   {
@@ -42,10 +64,42 @@ const menuItems = [
     ),
     submenu: [
       { name: "Inventario", path: "/inventory" },
-      { name: "Proveedores", path: "/suppliers" },
       { name: "Reservas", path: "/reserves" },
       { name: "Insumos", path: "/inputs" },
       { name: "Órdenes de Compra", path: "/purchase-orders" }
+    ]
+  },
+  {
+    name: "Pedidos",
+    path: "/orders",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M4.167 6.25h6.666M4.167 8.75h4.166M2.5 11.667V3.333c0-.92.746-1.666 1.667-1.666h6.666c.92 0 1.667.746 1.667 1.666v8.334l-2.5-1.25L7.5 11.667l-2.5-1.25L2.5 11.667z" />
+        </g>
+      </svg>
+    ),
+    submenu: [
+      { name: "Pedidos Client", path: "/orders-client" },
+      { name: "Pedidos Afil", path: "/orders-affiliate" },
+      { name: "Pedidos Market", path: "/orders-market" },
+      { name: "Pedidos Provee", path: "/orders-supplier" }
+    ]
+  },
+  {
+    name: "Couriers",
+    path: "/couriers",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M13.333 8.333V4.167c0-.92-.746-1.667-1.666-1.667H3.333c-.92 0-1.666.746-1.666 1.667v4.166M13.333 8.333l-1.666 3.334H3.333L1.667 8.333M13.333 8.333H1.667M5 11.667v1.666M10 11.667v1.666" />
+        </g>
+      </svg>
+    ),
+    submenu: [
+      { name: "Couriers", path: "/couriers" },
+      { name: "Rutas", path: "/routes" },
+      { name: "Envíos", path: "/shipments" }
     ]
   },
   {
@@ -67,6 +121,17 @@ const menuItems = [
 ];
 
 const settingsItems = [
+  {
+    name: "Administradores",
+    path: "/admin-accounts",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M7.5 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 13.333c0-2.757 2.239-5 5-5s5 2.243 5 5" />
+        </g>
+      </svg>
+    )
+  },
   {
     name: "Configuración",
     path: "/settings",
@@ -91,7 +156,9 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const [expandedMenus, setExpandedMenus] = useState({});
+  const [expandedMenus, setExpandedMenus] = useState({
+    'Entidades': true // Expandir Entidades por defecto para mostrar Tiendas
+  });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const toggleSubmenu = (itemName) => {

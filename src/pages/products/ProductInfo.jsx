@@ -1,25 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ProductPrice from '../../features/products/product-price';
 import ProductActions from '../../features/products/product-actions';
 import Modal from '../../components/common/modal';
-import productsData from '../../mocks/products.json';
+import { useProductQuery, useDeleteProductMutation, useUpdateProductStatusMutation } from '../../hooks/queries/useProducts.js';
 
 const ProductInfo = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      const foundProduct = productsData.find(p => p.id === id);
-      setProduct(foundProduct);
-      setLoading(false);
-    }, 500);
-  }, [id]);
+  
+  // React Query hooks
+  const { data: product, isLoading: loading, error } = useProductQuery(id);
+  const deleteProductMutation = useDeleteProductMutation();
+  const updateStatusMutation = useUpdateProductStatusMutation();
 
   const handleEdit = () => {
     navigate(`/products/${id}/edit`);
@@ -27,15 +21,23 @@ const ProductInfo = () => {
 
   const handleDelete = async () => {
     setShowDeleteModal(false);
-    // Simular eliminación
-    setTimeout(() => {
+    try {
+      await deleteProductMutation.mutateAsync(id);
       navigate('/products');
-    }, 1000);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Error al eliminar el producto');
+    }
   };
 
   const handleToggleStatus = async (product) => {
     const newStatus = product.status === 'published' ? 'draft' : 'published';
-    setProduct(prev => ({ ...prev, status: newStatus }));
+    try {
+      await updateStatusMutation.mutateAsync({ id: product.id, status: newStatus });
+    } catch (error) {
+      console.error('Error updating product status:', error);
+      alert('Error al actualizar el estado del producto');
+    }
   };
 
   const formatDate = (dateString) => {

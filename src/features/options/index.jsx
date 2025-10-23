@@ -2,14 +2,65 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Badge, Button, Select, Textarea, Switch } from "@medusajs/ui";
-import optionsData from "../../mocks/options.json";
 import DataLayout from "../../layouts/DataLayout.jsx";
+import { hasPermission } from "../../utils/permissions.js";
+import { useSelector } from "react-redux";
+import { 
+  useOptionsQuery,
+  useOptionQuery,
+  useUpdateOptionMutation, 
+  useDeleteOptionMutation 
+} from "../../hooks/queries/useOptions.js";
 
 export default function OptionDetail() {
   const { id } = useParams();
+
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canEdit = hasPermission(user, ['all', 'options']);
+  const canDelete = hasPermission(user, ['all', 'options']);
+
+  // Usar TanStack Query para obtener datos
+  const { 
+    data: optionsResult, 
+    isLoading: isOptionsLoading 
+  } = useOptionsQuery({ page: 1, pageSize: 100 });
   
-  // Encontrar la opción por ID
-  const option = optionsData.find(o => o.id === parseInt(id)) || optionsData[0]; // fallback a la primera opción
+  const { 
+    data: option, 
+    isLoading: isOptionLoading,
+    error: optionError 
+  } = useOptionQuery(id);
+
+  // Extraer datos de opciones para el selector
+  const optionsData = optionsResult?.items || [];
+  const isLoading = isOptionsLoading || isOptionLoading;
+
+  // Hooks de mutación
+  const updateOptionMutation = useUpdateOptionMutation({
+    onSuccess: (updatedOption) => {
+      console.log('✅ OptionDetail: Opción actualizada exitosamente:', updatedOption);
+    },
+    onError: (error) => {
+      console.error('❌ OptionDetail: Error detallado al actualizar opción:', error);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error response:', error.response?.data);
+      alert('Error al actualizar la opción: ' + error.message);
+    }
+  });
+
+  const deleteOptionMutation = useDeleteOptionMutation({
+    onSuccess: (result, deletedId) => {
+      // Si la opción eliminada era la que se estaba viendo, redirigir
+      if (String(deletedId) === String(id)) {
+        // Redirigir a la lista principal
+        window.location.href = '/options';
+      }
+    },
+    onError: (error) => {
+      alert('Error al eliminar la opción: ' + error.message);
+    }
+  });
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
@@ -401,6 +452,55 @@ export default function OptionDetail() {
     </div>
   );
 
+  const handleFormSubmit = (formData) => {
+    console.log('📋 OptionDetail.handleFormSubmit INICIO', { formData, option });
+    
+    if (!option?.id) {
+      console.error('❌ OptionDetail: No option ID found');
+      return Promise.reject(new Error('No se puede actualizar: ID de la opción no encontrado'));
+    }
+
+    return updateOptionMutation.mutateAsync({ id: option.id, data: formData });
+  };
+
+  const handleDelete = (entity) => {
+    console.log('🗑️ OptionDetail.handleDelete INICIO', { entity });
+    
+    if (!entity?.id) {
+      console.error('❌ OptionDetail: No entity ID found for deletion');
+      return Promise.reject(new Error('No se puede eliminar: ID de la opción no encontrado'));
+    }
+
+    return deleteOptionMutation.mutateAsync(entity.id);
+  };
+
+  // Mostrar loading si los datos están cargando
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Mostrar error si no se pudo cargar la opción
+  if (optionError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-error">Error al cargar la opción: {optionError.message}</div>
+      </div>
+    );
+  }
+
+  // Mostrar mensaje si no se encontró la opción
+  if (!option) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Opción no encontrada</div>
+      </div>
+    );
+  }
+
   return (
     <DataLayout
       entityName="options"
@@ -411,6 +511,8 @@ export default function OptionDetail() {
       setFormData={setFormData}
       onInputChange={handleInputChange}
       onSwitchChange={handleSwitchChange}
+      onEditSubmit={handleFormSubmit}
+      onDelete={handleDelete}
       renderHeader={renderHeader}
       renderMainSections={renderMainSections}
       renderSidebar={renderSidebar}
@@ -419,6 +521,12 @@ export default function OptionDetail() {
       editTitle="Editar Opción"
       deleteItemText="opción"
       customHandlers={customHandlers}
+      // Estados de loading y error
+      isLoading={updateOptionMutation.isPending || deleteOptionMutation.isPending}
+      permissions={{
+        canEdit,
+        canDelete
+      }}
     />
   );
 }

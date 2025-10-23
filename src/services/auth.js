@@ -6,6 +6,7 @@ const TOKEN_KEY = 'cpanel_admin_token';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
 const STORE_ID = import.meta.env.VITE_STORE_ID;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // Debug: Verificar configuración
 console.log('Auth Service Config:', {
@@ -126,7 +127,39 @@ const getRolePermissions = (userProfile) => {
 };
 
 export const login = async (user, password, rememberMe = false) => {
-  console.log('🔐 AUTH SERVICE: login() called with:', { user, rememberMe });
+  console.log('🔐 AUTH SERVICE: login() called with:', { user, rememberMe, USE_MOCK });
+  
+  // Modo MOCK: Simular login exitoso sin API
+  if (USE_MOCK) {
+    console.log('🚀 AUTH SERVICE: Using MOCK mode - simulating successful login');
+    
+    const mockUserData = {
+      id: 1,
+      email: user.includes('@') ? user : `${user}@demo.com`,
+      name: 'Admin Demo',
+      user: user,
+      role: 'admin',
+      store_id: parseInt(STORE_ID) || 1,
+      store_name: 'Tienda Demo',
+      avatar: null,
+      profile: { admin: true },
+      permissions: ['all'],
+      loginTime: new Date().toISOString(),
+    };
+    
+    // Simular guardado en localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUserData));
+    localStorage.setItem(TOKEN_KEY, 'mock-jwt-token-123456789');
+    
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_ME_KEY, 'true');
+    } else {
+      localStorage.removeItem(REMEMBER_ME_KEY);
+    }
+    
+    console.log('✅ AUTH SERVICE: Mock login successful', mockUserData);
+    return { success: true, user: mockUserData };
+  }
   
   // Request a API real de DecorLujo
   console.log('🌐 AUTH SERVICE: Making API request to /login');

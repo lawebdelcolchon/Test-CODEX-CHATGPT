@@ -2,14 +2,78 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Badge, Button } from "@medusajs/ui";
-import customersData from "../../mocks/customers.json";
 import DataLayout from "../../layouts/DataLayout.jsx";
+import { hasPermission } from "../../utils/permissions.js";
+import { useSelector } from "react-redux";
+import { 
+  useCustomersQuery,
+  useCustomerQuery,
+  useUpdateCustomerMutation, 
+  useDeleteCustomerMutation,
+  useCustomerOrdersQuery,
+  useCustomerAddressesQuery
+} from "../../hooks/queries/useCustomers.js";
 
 export default function CustomerDetail() {
   const { id } = useParams();
+
+  // Obtener usuario y verificar permisos
+  const { user } = useSelector((state) => state.auth);
+  const canEdit = hasPermission(user, ['all', 'customers']);
+  const canDelete = hasPermission(user, ['all', 'customers']);
+
+  // Usar TanStack Query para obtener datos
+  const { 
+    data: customersResult, 
+    isLoading: isCustomersLoading 
+  } = useCustomersQuery({ page: 1, pageSize: 100 });
   
-  // Encontrar el cliente por ID
-  const customer = customersData.find(c => c.id === id) || customersData[0]; // fallback al primer cliente
+  const { 
+    data: customer, 
+    isLoading: isCustomerLoading,
+    error: customerError 
+  } = useCustomerQuery(id);
+
+  // Obtener datos relacionados del cliente
+  const { 
+    data: customerOrders, 
+    isLoading: isOrdersLoading 
+  } = useCustomerOrdersQuery(id, {}, { enabled: !!customer });
+  
+  const { 
+    data: customerAddresses, 
+    isLoading: isAddressesLoading 
+  } = useCustomerAddressesQuery(id, {}, { enabled: !!customer });
+
+  // Extraer datos para el contexto
+  const customersData = customersResult?.items || [];
+  const isLoading = isCustomersLoading || isCustomerLoading;
+
+  // Hooks de mutación
+  const updateCustomerMutation = useUpdateCustomerMutation({
+    onSuccess: (updatedCustomer) => {
+      console.log('✅ CustomerDetail: Cliente actualizado exitosamente:', updatedCustomer);
+    },
+    onError: (error) => {
+      console.error('❌ CustomerDetail: Error detallado al actualizar cliente:', error);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error response:', error.response?.data);
+      alert('Error al actualizar el cliente: ' + error.message);
+    }
+  });
+
+  const deleteCustomerMutation = useDeleteCustomerMutation({
+    onSuccess: (result, deletedId) => {
+      // Si el cliente eliminado era el que se estaba viendo, redirigir
+      if (String(deletedId) === String(id)) {
+        // Redirigir a la lista principal
+        window.location.href = '/customers';
+      }
+    },
+    onError: (error) => {
+      alert('Error al eliminar el cliente: ' + error.message);
+    }
+  });
   
   // Estado para el formulario de edición
   const [formData, setFormData] = useState({
@@ -333,6 +397,55 @@ export default function CustomerDetail() {
     </div>
   );
 
+  const handleFormSubmit = (formData) => {
+    console.log('📋 CustomerDetail.handleFormSubmit INICIO', { formData, customer });
+    
+    if (!customer?.id) {
+      console.error('❌ CustomerDetail: No customer ID found');
+      return Promise.reject(new Error('No se puede actualizar: ID del cliente no encontrado'));
+    }
+
+    return updateCustomerMutation.mutateAsync({ id: customer.id, data: formData });
+  };
+
+  const handleDelete = (entity) => {
+    console.log('🗑️ CustomerDetail.handleDelete INICIO', { entity });
+    
+    if (!entity?.id) {
+      console.error('❌ CustomerDetail: No entity ID found for deletion');
+      return Promise.reject(new Error('No se puede eliminar: ID del cliente no encontrado'));
+    }
+
+    return deleteCustomerMutation.mutateAsync(entity.id);
+  };
+
+  // Mostrar loading si los datos están cargando
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Mostrar error si no se pudo cargar el cliente
+  if (customerError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-error">Error al cargar el cliente: {customerError.message}</div>
+      </div>
+    );
+  }
+
+  // Mostrar mensaje si no se encontró el cliente
+  if (!customer) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-ui-fg-muted">Cliente no encontrado</div>
+      </div>
+    );
+  }
+
   return (
     <DataLayout
       entityName="customers"
@@ -342,6 +455,8 @@ export default function CustomerDetail() {
       formData={formData}
       setFormData={setFormData}
       onInputChange={handleInputChange}
+      onEditSubmit={handleFormSubmit}
+      onDelete={handleDelete}
       renderHeader={renderHeader}
       renderMainSections={renderMainSections}
       renderSidebar={renderSidebar}
@@ -350,6 +465,12 @@ export default function CustomerDetail() {
       editTitle="Editar Cliente"
       deleteItemText="cliente"
       customHandlers={customHandlers}
+      // Estados de loading y error
+      isLoading={updateCustomerMutation.isPending || deleteCustomerMutation.isPending}
+      permissions={{
+        canEdit,
+        canDelete
+      }}
     />
   );
 }

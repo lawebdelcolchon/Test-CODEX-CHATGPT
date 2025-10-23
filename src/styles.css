@@ -1,3 +1,6 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+
 /* src/index.css */
 *,
 ::before,
@@ -611,16 +614,6 @@ video {
     0px 0px 0px 2px rgba(24, 24, 27, 1),
     0px 0px 0px 4px rgba(96, 165, 250, 0.8);
   --borders-interactive-with-shadow: 0px -1px 2px 0px rgba(219, 234, 254, 0.5), 0px 0px 0px 1px rgba(96, 165, 250, 1);
-}
-@font-face {
-  font-family: "Inter";
-  font-weight: 400;
-  src: url("./Inter-Regular-CKBOXRQ3.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Inter";
-  font-weight: 500;
-  src: url("./Inter-Medium-RUQTUVA3.ttf") format("truetype");
 }
 @font-face {
   font-family: "Roboto Mono";

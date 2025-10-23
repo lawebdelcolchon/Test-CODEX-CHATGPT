@@ -6,7 +6,7 @@ import { getModelConfig } from '../config/models.js';
 /**
  * Hook personalizado para operaciones CRUD genéricas
  * Proporciona una interfaz unificada para cualquier modelo
- * 
+ *
  * @param {string} modelName - Nombre del modelo (products, orders, etc.)
  * @param {Object} options - Opciones de configuración
  * @returns {Object} Objeto con datos, acciones y estados
@@ -21,14 +21,14 @@ export const useGenericCRUD = (modelName, options = {}) => {
   } = options;
 
   const dispatch = useDispatch();
-  
+
   // Obtener acciones y selectors del modelo
   const actions = useMemo(() => getModelActions(modelName), [modelName]);
   const selectors = useMemo(() => getModelSelectors(modelName), [modelName]);
   const config = useMemo(() => getModelConfig(modelName), [modelName]);
 
   // ===== SELECTORS =====
-  
+
   // Datos principales
   const items = useSelector(selectors.selectItems);
   const currentItem = useSelector(selectors.selectCurrentItem);
@@ -66,19 +66,19 @@ export const useGenericCRUD = (modelName, options = {}) => {
     try {
       const mergedParams = { ...fetchParams, ...params };
       const result = await dispatch(actions.fetchList(mergedParams)).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('fetchList', result);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error fetching ${modelName} list:`, error);
-      
+
       if (onError) {
         onError('fetchList', error);
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.fetchList, fetchParams, onSuccess, onError, modelName]);
@@ -87,19 +87,19 @@ export const useGenericCRUD = (modelName, options = {}) => {
   const fetchById = useCallback(async (id) => {
     try {
       const result = await dispatch(actions.fetchById(id)).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('fetchById', result);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error fetching ${modelName} ${id}:`, error);
-      
+
       if (onError) {
         onError('fetchById', error);
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.fetchById, onSuccess, onError, modelName]);
@@ -108,19 +108,19 @@ export const useGenericCRUD = (modelName, options = {}) => {
   const create = useCallback(async (payload) => {
     try {
       const result = await dispatch(actions.create(payload)).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('create', result);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error creating ${modelName}:`, error);
-      
+
       if (onError) {
         onError('create', error);
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.create, onSuccess, onError, modelName]);
@@ -131,18 +131,18 @@ export const useGenericCRUD = (modelName, options = {}) => {
     if (enableOptimisticUpdates) {
       dispatch(actions.updateItemOptimistic({ id, changes: payload }));
     }
-    
+
     try {
       const result = await dispatch(actions.update({ id, payload })).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('update', result);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error updating ${modelName} ${id}:`, error);
-      
+
       // Revertir actualización optimista en caso de error
       if (enableOptimisticUpdates) {
         // Buscar el item original para revertir
@@ -151,11 +151,11 @@ export const useGenericCRUD = (modelName, options = {}) => {
           dispatch(actions.updateItemOptimistic({ id, changes: originalItem }));
         }
       }
-      
+
       if (onError) {
         onError('update', error);
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.update, actions.updateItemOptimistic, enableOptimisticUpdates, items, onSuccess, onError, modelName]);
@@ -164,19 +164,19 @@ export const useGenericCRUD = (modelName, options = {}) => {
   const remove = useCallback(async (id) => {
     try {
       const result = await dispatch(actions.remove(id)).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('remove', result);
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error removing ${modelName} ${id}:`, error);
-      
+
       if (onError) {
         onError('remove', error);
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.remove, onSuccess, onError, modelName]);
@@ -185,19 +185,19 @@ export const useGenericCRUD = (modelName, options = {}) => {
   const customAction = useCallback(async (action, id = null, payload = null, method = 'GET') => {
     try {
       const result = await dispatch(actions.customAction({ action, id, payload, method })).unwrap();
-      
+
       if (onSuccess) {
         onSuccess('customAction', { action, result });
       }
-      
+
       return result;
     } catch (error) {
       console.error(`Error in custom action ${action} on ${modelName}:`, error);
-      
+
       if (onError) {
         onError('customAction', { action, error });
       }
-      
+
       throw error;
     }
   }, [dispatch, actions.customAction, onSuccess, onError, modelName]);
@@ -223,6 +223,17 @@ export const useGenericCRUD = (modelName, options = {}) => {
   const setSort = useCallback((sortConfig) => {
     dispatch(actions.setSort(sortConfig));
   }, [dispatch, actions.setSort]);
+
+  // Cambiar página (nueva función)
+  const setPage = useCallback((newPage) => {
+    const params = {
+      ...currentFilters,
+      ...currentSort,
+      page: newPage,
+      pageSize: pagination.pageSize
+    };
+    return fetchList(params);
+  }, [fetchList, currentFilters, currentSort, pagination.pageSize]);
 
   // Reset estado
   const resetState = useCallback(() => {
@@ -252,16 +263,16 @@ export const useGenericCRUD = (modelName, options = {}) => {
   // ===== VALORES COMPUTADOS =====
 
   const isAnyLoading = useMemo(() => {
-    return isLoading || isListLoading || isCreateLoading || 
-           isUpdateLoading || isDeleteLoading || isFetchByIdLoading || 
+    return isLoading || isListLoading || isCreateLoading ||
+           isUpdateLoading || isDeleteLoading || isFetchByIdLoading ||
            isCustomActionLoading;
-  }, [isLoading, isListLoading, isCreateLoading, isUpdateLoading, 
+  }, [isLoading, isListLoading, isCreateLoading, isUpdateLoading,
       isDeleteLoading, isFetchByIdLoading, isCustomActionLoading]);
 
   const hasError = useMemo(() => {
-    return !!(error || listError || createError || updateError || 
+    return !!(error || listError || createError || updateError ||
               deleteError || fetchByIdError || customActionError);
-  }, [error, listError, createError, updateError, deleteError, 
+  }, [error, listError, createError, updateError, deleteError,
       fetchByIdError, customActionError]);
 
   const isEmpty = useMemo(() => {
@@ -342,6 +353,7 @@ export const useGenericCRUD = (modelName, options = {}) => {
       clearCurrentItem,
       resetState,
       findItemById,
+      setPage,
       canCreate,
       canUpdate,
       canDelete

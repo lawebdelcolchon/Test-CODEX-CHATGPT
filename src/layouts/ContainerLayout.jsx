@@ -2,17 +2,29 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "../components/Table.jsx";
+import Pagination from "../components/Pagination.jsx";
 import { DropdownMenu, IconButton, Button } from "@medusajs/ui"
 import { ArrowUpDown } from "@medusajs/icons"
 import { hasPermission } from "../utils/permissions.js";
 import { useSelector } from "react-redux";
+import { useGenericCRUD } from "../hooks/useGenericCRUD.js";
 
 export default function Container({ entityName, columnsData, orderKeys = [], DataSet = [], reduxState = null, emptyMessage = "No se encontraron resultados" }) {
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Usar useGenericCRUD si existe entityName, sino usar el método legacy
+  const useApiPagination = !!entityName && !reduxState;
+  
+  // Hook para manejo de CRUD con paginación de API
+  const crudData = useGenericCRUD(entityName, {
+    autoFetch: useApiPagination
+  });
+  
+  // Estados legacy para compatibilidad con reduxState
+  const [legacyData, setLegacyData] = useState([]);
+  const [legacyLoading, setLegacyLoading] = useState(true);
+  const [legacyCurrentPage, setLegacyCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
   // Obtener usuario y verificar permisos para la entidad actual
@@ -26,81 +38,125 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
   
   const [fieldOrder, setFieldOrder] = useState(availableOrderKeys[0] || "");
   const [directionOrder, setDirectionOrder] = useState("asc");
-    
+  
+  // Lógica legacy para compatibilidad con reduxState
   useEffect(() => {
-    if (reduxState) {
-      // Usar datos del estado de Redux
+    if (!useApiPagination && reduxState) {
+      // Usar datos del estado de Redux (método legacy)
       const { items, status, error } = reduxState;
       
       if (status === 'loading') {
-        setLoading(true);
+        setLegacyLoading(true);
       } else if (status === 'succeeded') {
-        setData(items || []);
-        setLoading(false);
+        setLegacyData(items || []);
+        setLegacyLoading(false);
       } else if (status === 'failed') {
         console.error('Error loading data:', error);
-        setData([]);
-        setLoading(false);
+        setLegacyData([]);
+        setLegacyLoading(false);
       }
-    } else {
+    } else if (!useApiPagination && !reduxState) {
       // Fallback a usar DataSet (para compatibilidad)
       setTimeout(() => {
-        setData(DataSet);
-        setLoading(false);
+        setLegacyData(DataSet);
+        setLegacyLoading(false);
       }, 500);
     }
-  }, [DataSet, reduxState]);
-
+  }, [DataSet, reduxState, useApiPagination]);
+  
+  // Determinar qué datos usar
+  const data = useApiPagination ? crudData.data.items : legacyData;
+  const loading = useApiPagination ? crudData.loading.isListLoading : legacyLoading;
+  const pagination = useApiPagination ? crudData.data.pagination : null;
+  
   // Determinar columna a usar para ordenar
   const fieldAccessor = useMemo(() => {
     return columnsData.find(c => c.label === fieldOrder)?.accessor || fieldOrder;
   }, [columnsData, fieldOrder]);
 
-  // Filtrado
+  // Para paginación de API, solo filtramos localmente
+  // Para legacy, mantenemos el filtrado, ordenamiento y paginación local
   const filteredData = useMemo(() => {
-    return data.filter((row) =>
-      Object.values(row).some((value) =>
-        String(value || "").toLowerCase().includes(q.toLowerCase())
-      )
-    );
-  }, [data, q]);
+    if (useApiPagination) {
+      // Con API pagination, solo filtramos los datos actuales de la página
+      return data.filter((row) =>
+        Object.values(row).some((value) =>
+          String(value || "").toLowerCase().includes(q.toLowerCase())
+        )
+      );
+    } else {
+      // Legacy: filtrado completo
+      return data.filter((row) =>
+        Object.values(row).some((value) =>
+          String(value || "").toLowerCase().includes(q.toLowerCase())
+        )
+      );
+    }
+  }, [data, q, useApiPagination]);
 
-  // Ordenamiento
+  // Ordenamiento (solo para legacy)
   const sortedData = useMemo(() => {
-    return [...filteredData].sort((a, b) => {
-      const valA = a[fieldAccessor];
-      const valB = b[fieldAccessor];
+    if (useApiPagination) {
+      // Con API, no ordenamos localmente - esto debería manejarse en la API
+      return filteredData;
+    } else {
+      // Legacy: ordenamiento local
+      return [...filteredData].sort((a, b) => {
+        const valA = a[fieldAccessor];
+        const valB = b[fieldAccessor];
 
-      if (valA == null) return 1;
-      if (valB == null) return -1;
+        if (valA == null) return 1;
+        if (valB == null) return -1;
 
-      if (typeof valA === "number" && typeof valB === "number") {
-        return directionOrder === "asc" ? valA - valB : valB - valA;
-      }
+        if (typeof valA === "number" && typeof valB === "number") {
+          return directionOrder === "asc" ? valA - valB : valB - valA;
+        }
 
-      // Si son fechas
-      if (!isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
+        // Si son fechas
+        if (!isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
+          return directionOrder === "asc"
+            ? new Date(valA) - new Date(valB)
+            : new Date(valB) - new Date(valA);
+        }
+
+        // Comparación de strings genérica
         return directionOrder === "asc"
-          ? new Date(valA) - new Date(valB)
-          : new Date(valB) - new Date(valA);
-      }
+          ? String(valA).localeCompare(String(valB))
+          : String(valB).localeCompare(String(valA));
+      });
+    }
+  }, [filteredData, fieldAccessor, directionOrder, useApiPagination]);
 
-      // Comparación de strings genérica
-      return directionOrder === "asc"
-        ? String(valA).localeCompare(String(valB))
-        : String(valB).localeCompare(String(valA));
-    });
-  }, [filteredData, fieldAccessor, directionOrder]);
-
-  // Paginación sobre los datos ordenados
-  const { totalPages, startIndex, endIndex, currentData } = useMemo(() => {
-    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentData = sortedData.slice(startIndex, endIndex);
-    
-    return { totalPages, startIndex, endIndex, currentData };
-  }, [sortedData, currentPage, itemsPerPage]);
+  // Paginación: API vs Legacy
+  const paginationData = useMemo(() => {
+    if (useApiPagination) {
+      return {
+        currentPage: pagination?.page || 1,
+        totalPages: pagination?.totalPages || 1,
+        total: pagination?.total || 0,
+        pageSize: pagination?.pageSize || 20,
+        startIndex: ((pagination?.page || 1) - 1) * (pagination?.pageSize || 20),
+        endIndex: (pagination?.page || 1) * (pagination?.pageSize || 20),
+        currentData: sortedData  // Los datos ya están paginados por la API
+      };
+    } else {
+      // Legacy: paginación local
+      const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+      const startIndex = (legacyCurrentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const currentData = sortedData.slice(startIndex, endIndex);
+      
+      return {
+        currentPage: legacyCurrentPage,
+        totalPages,
+        total: sortedData.length,
+        pageSize: itemsPerPage,
+        startIndex,
+        endIndex,
+        currentData
+      };
+    }
+  }, [useApiPagination, pagination, sortedData, legacyCurrentPage, itemsPerPage]);
 
   const handleView = useCallback((row) => {
     console.log("🔍 handleView ejecutado para:", row);
@@ -247,7 +303,7 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
           <div className="flex w-full flex-col overflow-hidden" style={{borderTopWidth: "0px"}}>
             <Table
               columns={columnsData}
-              data={currentData}
+              data={paginationData.currentData}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onView={handleView}
@@ -258,32 +314,41 @@ export default function Container({ entityName, columnsData, orderKeys = [], Dat
             />
 
             {/* Paginación */}
-            <div className="text-ui-fg-subtle txt-compact-small-plus flex w-full items-center justify-between px-3 py-4">
-              <div className="inline-flex items-center gap-x-1 px-3 py-[5px]">
-                <p>{startIndex + 1}</p>
-                <span>-</span>
-                <p>{Math.min(endIndex, filteredData.length)} de {filteredData.length} resultados</p>
+            {useApiPagination ? (
+              <Pagination
+                currentPage={paginationData.currentPage}
+                totalPages={paginationData.totalPages}
+                onPageChange={(page) => crudData.utils.setPage(page)}
+                className="px-3 py-4"
+              />
+            ) : (
+              <div className="text-ui-fg-subtle txt-compact-small-plus flex w-full items-center justify-between px-3 py-4">
+                <div className="inline-flex items-center gap-x-1 px-3 py-[5px]">
+                  <p>{paginationData.startIndex + 1}</p>
+                  <span>-</span>
+                  <p>{Math.min(paginationData.endIndex, paginationData.total)} de {paginationData.total} resultados</p>
+                </div>
+                <div className="flex items-center gap-x-2">
+                  <p>{paginationData.currentPage} de {paginationData.totalPages} páginas</p>
+                  <button
+                    type="button"
+                    disabled={paginationData.currentPage === 1}
+                    onClick={() => setLegacyCurrentPage(paginationData.currentPage - 1)}
+                    className="btn-transparent"
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    type="button"
+                    disabled={paginationData.currentPage === paginationData.totalPages}
+                    onClick={() => setLegacyCurrentPage(paginationData.currentPage + 1)}
+                    className="btn-transparent"
+                  >
+                    Siguiente
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-x-2">
-                <p>{currentPage} de {totalPages} páginas</p>
-                <button
-                  type="button"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="btn-transparent"
-                >
-                  Anterior
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="btn-transparent"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

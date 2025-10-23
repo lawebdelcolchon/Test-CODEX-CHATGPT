@@ -4,30 +4,25 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
 
 const menuItems = [
-  { 
-    name: "Dashboard", 
-    path: "/", 
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M1.944 8.167h5.778M1.944 5.056h5.778M1.944 1.944h8.89" />
-      </svg>
-    )
-  },
   {
-    name: "Pedidos",
-    path: "/orders",
+    name: "Entidades",
+    path: "/entities",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <g clipPath="url(#a)">
-          <path fill="currentColor" fillRule="evenodd" d="M1.631.37a.75.75 0 0 0-.364 1.455l1.201.3a.14.14 0 0 1 .104.115l.238 1.615.005.038.663 4.501a1.862 1.862 0 0 0 .416 3.675h9.555a.75.75 0 0 0 0-1.5H3.894a.362.362 0 0 1 0-.722h.403a1 1 0 0 0 .083 0h7.095c.704 0 1.332-.45 1.556-1.121l1.184-3.555a1.64 1.64 0 0 0-1.555-2.157H4.202l-.146-.992A1.64 1.64 0 0 0 2.832.67zm2.792 4.144.564 3.833h6.488c.06 0 .114-.038.132-.094l1.185-3.556a.138.138 0 0 0-.132-.183zM3.227 14.653a1.111 1.111 0 1 0 0-2.222 1.111 1.111 0 0 0 0 2.222m10.445-1.111a1.111 1.111 0 1 1-2.223 0 1.111 1.111 0 0 1 2.223 0" clipRule="evenodd" />
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M7.5 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 13.333c0-2.757 2.239-5 5-5s5 2.243 5 5M11.25 5.417a1.667 1.667 0 1 0 0-3.334 1.667 1.667 0 0 0 0 3.334zM13.333 13.333c0-1.841-1.492-3.333-3.333-3.333M3.75 5.417a1.667 1.667 0 1 1 0-3.334 1.667 1.667 0 0 1 0 3.334zM5 10c-1.841 0-3.333 1.492-3.333 3.333" />
         </g>
-        <defs>
-          <clipPath id="a">
-            <path fill="#fff" d="M0 0h15v15H0z" />
-          </clipPath>
-        </defs>
       </svg>
-    )
+    ),
+    submenu: [
+      { name: "Tiendas", path: "/stores" },
+      { name: "Clientes", path: "/clients" },
+      { name: "Afiliados", path: "/affiliates" },
+      { name: "Marketplace", path: "/marketplace" },
+      { name: "Contactos", path: "/contacts" },
+      { name: "Proveedores", path: "/suppliers" },
+      { name: "Depósitos", path: "/deposits" }
+    ]
   },
   {
     name: "Productos",
@@ -45,10 +40,11 @@ const menuItems = [
       </svg>
     ),
     submenu: [
-      { name: "Catálogo", path: "/products" },
+      { name: "Productos", path: "/products" },
       { name: "Categorías", path: "/categories" },
       { name: "Atributos", path: "/attributes" },
       { name: "Opciones", path: "/options" },
+      { name: "Etiquetas", path: "/product-tags" },
     ]
   },
   {
@@ -68,30 +64,42 @@ const menuItems = [
     ),
     submenu: [
       { name: "Inventario", path: "/inventory" },
-      { name: "Proveedores", path: "/suppliers" },
       { name: "Reservas", path: "/reserves" },
       { name: "Insumos", path: "/inputs" },
       { name: "Órdenes de Compra", path: "/purchase-orders" }
     ]
   },
   {
-    name: "Clientes",
-    path: "/customers",
+    name: "Pedidos",
+    path: "/orders",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
-        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" clipPath="url(#a)">
-          <path d="M4.701 6.854a1.722 1.722 0 1 0 0-3.444 1.722 1.722 0 0 0 0 3.444M8.024 12.772c.45-.151.715-.64.548-1.084a4.135 4.135 0 0 0-7.74 0c-.167.444.098.934.548 1.084a10.486 10.486 0 0 0 6.644 0M10.083 4.701a1.722 1.722 0 1 0 0-3.444 1.722 1.722 0 0 0 0 3.444M10.728 11.14a10.5 10.5 0 0 0 2.678-.521c.45-.15.714-.64.547-1.084a4.135 4.135 0 0 0-6.146-1.997" />
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M4.167 6.25h6.666M4.167 8.75h4.166M2.5 11.667V3.333c0-.92.746-1.666 1.667-1.666h6.666c.92 0 1.667.746 1.667 1.666v8.334l-2.5-1.25L7.5 11.667l-2.5-1.25L2.5 11.667z" />
         </g>
-        <defs>
-          <clipPath id="a">
-            <path fill="#fff" d="M0 0h15v15H0z" />
-          </clipPath>
-        </defs>
       </svg>
     ),
     submenu: [
-      { name: "Clientes", path: "/customers" },
-      { name: "Grupos de clientes", path: "/customer-groups" }
+      { name: "Pedidos Client", path: "/orders-client" },
+      { name: "Pedidos Afil", path: "/orders-affiliate" },
+      { name: "Pedidos Market", path: "/orders-market" },
+      { name: "Pedidos Provee", path: "/orders-supplier" }
+    ]
+  },
+  {
+    name: "Couriers",
+    path: "/couriers",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M13.333 8.333V4.167c0-.92-.746-1.667-1.666-1.667H3.333c-.92 0-1.666.746-1.666 1.667v4.166M13.333 8.333l-1.666 3.334H3.333L1.667 8.333M13.333 8.333H1.667M5 11.667v1.666M10 11.667v1.666" />
+        </g>
+      </svg>
+    ),
+    submenu: [
+      { name: "Couriers", path: "/couriers" },
+      { name: "Rutas", path: "/routes" },
+      { name: "Envíos", path: "/shipments" }
     ]
   },
   {
@@ -113,6 +121,17 @@ const menuItems = [
 ];
 
 const settingsItems = [
+  {
+    name: "Administradores",
+    path: "/admin-accounts",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none">
+        <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+          <path d="M7.5 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM2.5 13.333c0-2.757 2.239-5 5-5s5 2.243 5 5" />
+        </g>
+      </svg>
+    )
+  },
   {
     name: "Configuración",
     path: "/settings",
@@ -137,7 +156,9 @@ export default function MobileSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const [expandedMenus, setExpandedMenus] = useState({});
+  const [expandedMenus, setExpandedMenus] = useState({
+    'Entidades': true // Expandir Entidades por defecto para mostrar Tiendas
+  });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const toggleSubmenu = (itemName) => {
