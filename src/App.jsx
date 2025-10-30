@@ -42,6 +42,12 @@ import MarketplaceEdit from "./features/marketplace/edit.jsx";
 import SuppliersIndex from "./features/suppliers/index.jsx";
 import SuppliersCreate from "./features/suppliers/create.jsx";
 import SuppliersEdit from "./features/suppliers/edit.jsx";
+import Affiliates from "./pages/Affiliates.jsx";
+import AffiliatesIndex from "./features/affiliates/index.jsx";
+import AffiliatesCreate from "./features/affiliates/create.jsx";
+import AffiliatesEdit from "./features/affiliates/edit.jsx";
+import AffiliatesCreateContact from "./features/affiliates/create_contact.jsx";
+import AffiliatesCreateZone from "./features/affiliates/create_zone.jsx";
 import CustomerGroups from "./pages/CustomerGroups.jsx";
 import Campaigns from "./pages/Campaigns.jsx";
 import PriceList from "./pages/PriceList.jsx";
@@ -107,6 +113,14 @@ export default function App() {
         <Route path="suppliers/create" element={<SuppliersCreate />} />
         <Route path="suppliers/:id/edit" element={<SuppliersEdit />} />
         <Route path="suppliers/:id" element={<SuppliersIndex />} />
+        
+        {/* Affiliates Management Routes */}
+        <Route path="affiliates" element={<Affiliates />} />
+        <Route path="affiliates/create" element={<AffiliatesCreate />} />
+        <Route path="affiliates/:id/edit" element={<AffiliatesEdit />} />
+        <Route path="affiliates/:id" element={<AffiliatesIndex />} />
+        <Route path="affiliates/:id/contacts/create" element={<AffiliatesCreateContact />} />
+        <Route path="affiliates/:id/zones/create" element={<AffiliatesCreateZone />} />
         
         {/* Categories Management Routes */}
         <Route path="categories" element={<Categories />} />
