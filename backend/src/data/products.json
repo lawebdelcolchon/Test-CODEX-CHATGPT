@@ -1,0 +1,23 @@
+[
+  {
+    "id": "p-100",
+    "name": "Aurora Wireless Headphones",
+    "description": "Bluetooth headphones with hybrid noise cancellation and 30h battery life.",
+    "price": 129.99,
+    "imageId": "img-hero"
+  },
+  {
+    "id": "p-101",
+    "name": "Lumen Smart Lamp",
+    "description": "Desk lamp with ambient light sensors and Qi wireless charger.",
+    "price": 89.5,
+    "imageId": "img-lamp"
+  },
+  {
+    "id": "p-102",
+    "name": "Nordic Brew Kit",
+    "description": "Pour-over coffee kit complete with filters and double-walled carafe.",
+    "price": 64.0,
+    "imageId": "img-coffee"
+  }
+]
