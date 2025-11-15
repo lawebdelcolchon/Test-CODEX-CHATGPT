@@ -1,7 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const dataDir = resolve(process.cwd(), 'src', 'data');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const dataDir = resolve(__dirname, '../data');
 
 const cache = new Map();
 
@@ -23,18 +25,7 @@ async function writeJson(filename, data) {
   return data;
 }
 
-export async function getProducts() {
-  return readJson('products.json');
-}
-
-export async function saveProducts(products) {
-  return writeJson('products.json', products);
-}
-
-export async function getImages() {
-  return readJson('images.json');
-}
-
-export async function saveImages(images) {
-  return writeJson('images.json', images);
-}
+export const getProducts = () => readJson('products.json');
+export const saveProducts = (products) => writeJson('products.json', products);
+export const getImages = () => readJson('images.json');
+export const saveImages = (images) => writeJson('images.json', images);

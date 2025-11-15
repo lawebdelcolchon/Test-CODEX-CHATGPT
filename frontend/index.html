@@ -1,13 +1,115 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lumen Store</title>
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <header class="hero">
+      <div class="hero__content">
+        <h1>Lumen Store</h1>
+        <p>Una experiencia de ecommerce con catálogo, carrito y panel de administración en un solo lugar.</p>
+        <div class="hero__actions">
+          <button id="shop-tab" class="tab-button active">Tienda</button>
+          <button id="admin-tab" class="tab-button">Administración</button>
+        </div>
+      </div>
+      <div class="hero__stats">
+        <div>
+          <p class="stat__label">Productos</p>
+          <p id="stat-products" class="stat__value">0</p>
+        </div>
+        <div>
+          <p class="stat__label">Imágenes</p>
+          <p id="stat-images" class="stat__value">0</p>
+        </div>
+        <div>
+          <p class="stat__label">Carrito</p>
+          <p id="stat-cart" class="stat__value">0</p>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="store-view">
+        <div class="store__layout">
+          <div>
+            <h2>Novedades</h2>
+            <p class="section-subtitle">Agrega artículos al carrito, revisa detalles y administra tus favoritos.</p>
+            <div id="product-grid" class="product-grid"></div>
+          </div>
+          <aside class="cart">
+            <header class="cart__header">
+              <div>
+                <h3>Carrito</h3>
+                <p>Resumen en tiempo real</p>
+              </div>
+              <button id="clear-cart" class="ghost">Vaciar</button>
+            </header>
+            <div id="cart-items" class="cart__items"></div>
+            <footer class="cart__footer">
+              <p>Total</p>
+              <p id="cart-total" class="total">$0.00</p>
+              <button id="checkout" class="primary">Proceder al pago</button>
+            </footer>
+          </aside>
+        </div>
+      </section>
+
+      <section id="admin-view" class="hidden">
+        <div class="admin-panels">
+          <article>
+            <h2>Catálogo</h2>
+            <form id="product-form" class="stack">
+              <label>
+                Nombre
+                <input name="name" placeholder="Producto" required />
+              </label>
+              <label>
+                Descripción
+                <textarea name="description" rows="2" placeholder="Breve resumen" required></textarea>
+              </label>
+              <label>
+                Precio
+                <input name="price" type="number" min="0" step="0.01" required />
+              </label>
+              <label>
+                URL de imagen
+                <input name="image" placeholder="https://" required />
+              </label>
+              <button class="primary" type="submit">Crear producto</button>
+            </form>
+            <div class="admin-list">
+              <h3>Lista actual</h3>
+              <ul id="product-admin-list"></ul>
+            </div>
+          </article>
+          <article>
+            <h2>Administrador de imágenes</h2>
+            <form id="image-form" class="stack">
+              <label>
+                URL
+                <input name="url" placeholder="https://" required />
+              </label>
+              <label>
+                Texto alternativo
+                <input name="alt" placeholder="Descripción" required />
+              </label>
+              <button class="primary" type="submit">Guardar</button>
+            </form>
+            <div class="admin-list">
+              <h3>Repositorio</h3>
+              <ul id="image-admin-list"></ul>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="/app.js"></script>
   </body>
 </html>

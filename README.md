@@ -1,47 +1,37 @@
-# Lumen Store – Ecommerce full-stack demo
+# Lumen Store – Ecommerce sin dependencias externas
 
-Proyecto full-stack que incluye:
+Proyecto full-stack listo para ejecutarse sin descargar paquetes de Internet. El servidor HTTP escrito con Node expone la API REST y también entrega el frontend estático, por lo que basta con tener Node 18+ para iniciar todo.
 
-- **Frontend React (Vite)** con catálogo, carrito y panel de administración de imágenes.
-- **Backend Node/Express** con endpoints REST para productos e imágenes persistidos en JSON.
+## Características
+
+- **Frontend** en HTML + módulos JavaScript que replica la experiencia React: catálogo dinámico, carrito interactivo y panel de administración para productos e imágenes.
+- **Backend** Node puro que gestiona productos e imágenes en archivos JSON y sirve los assets del frontend.
+- **APIs REST** para CRUD de productos e imágenes, además de un endpoint de salud.
 
 ## Requisitos
 
 - Node.js 18+
-- npm 9+
 
-## Instalación
+No se necesita `npm install` ni gestores de paquetes.
 
-```bash
-npm install # instala prettier para el formateo opcional
-(cd backend && npm install)
-(cd frontend && npm install)
-```
-
-## Ejecutar backend
+## Ejecutar
 
 ```bash
 cd backend
-npm run dev # servidor en http://localhost:5000
+node src/server.js
 ```
 
-## Ejecutar frontend
+El servidor quedará disponible en `http://localhost:5000`. Se sirven las rutas de la API y el frontend:
 
-```bash
-cd frontend
-npm run dev # Vite expone http://localhost:5173 con proxy a /api
-```
+| Método | Ruta                   | Descripción                        |
+| ------ | ---------------------- | ---------------------------------- |
+| GET    | `/api/products`        | Listado del catálogo               |
+| POST   | `/api/products`        | Crear producto                     |
+| PUT    | `/api/products/:id`    | Actualizar producto                |
+| DELETE | `/api/products/:id`    | Eliminar producto                  |
+| GET    | `/api/images`          | Listado de imágenes                |
+| POST   | `/api/images`          | Crear registro de imagen           |
+| DELETE | `/api/images/:id`      | Borrar imagen                      |
+| GET    | `/api/health`          | Estado del servidor                |
 
-## Endpoints disponibles
-
-| Método | Ruta             | Descripción                              |
-| ------ | ---------------- | ---------------------------------------- |
-| GET    | `/api/products`  | Lista todo el catálogo                   |
-| POST   | `/api/products`  | Crea un producto                         |
-| PUT    | `/api/products/:id` | Actualiza un producto existente      |
-| DELETE | `/api/products/:id` | Elimina un producto                   |
-| GET    | `/api/images`    | Lista las imágenes disponibles           |
-| POST   | `/api/images`    | Agrega una imagen nueva                  |
-| DELETE | `/api/images/:id` | Elimina una imagen                      |
-
-Los datos se guardan en `backend/src/data/*.json`. Para un entorno real sustituye el almacenaje por una base de datos.
+Los datos se almacenan en `backend/src/data/*.json`. Puedes personalizarlos directamente o mediante el panel administrativo del frontend.
