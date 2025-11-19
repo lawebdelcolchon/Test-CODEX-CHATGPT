@@ -81,6 +81,7 @@ const menuItems = [
     ),
     submenu: [
       { name: "Pedidos Client", path: "/orders-client" },
+      { name: "Facturas", path: "/invoices" },
       { name: "Pedidos Afil", path: "/orders-affiliate" },
       { name: "Pedidos Market", path: "/orders-market" },
       { name: "Pedidos Provee", path: "/orders-supplier" }

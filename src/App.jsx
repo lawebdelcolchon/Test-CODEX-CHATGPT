@@ -48,6 +48,11 @@ import AffiliatesCreate from "./features/affiliates/create.jsx";
 import AffiliatesEdit from "./features/affiliates/edit.jsx";
 import AffiliatesCreateContact from "./features/affiliates/create_contact.jsx";
 import AffiliatesCreateZone from "./features/affiliates/create_zone.jsx";
+import Orders from "./pages/Orders.jsx";
+import OrdersIndex from "./features/orders/index.jsx";
+import OrdersEdit from "./features/orders/edit.jsx";
+import Invoices from "./pages/Invoices.jsx";
+import InvoicesIndex from "./features/invoices/index.jsx";
 import CustomerGroups from "./pages/CustomerGroups.jsx";
 import Campaigns from "./pages/Campaigns.jsx";
 import PriceList from "./pages/PriceList.jsx";
@@ -77,43 +82,43 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="/categories" />} />
-        
+
         {/* Admin Accounts Management Routes - Moved to top to avoid conflicts */}
         <Route path="admin-accounts" element={<AdminAccounts />} />
         <Route path="admin-accounts/create" element={<AdminAccountsCreate />} />
         <Route path="admin-accounts/:id/edit" element={<AdminAccountsEdit />} />
         <Route path="admin-accounts/:id" element={<AdminAccountDetail />} />
-        
+
         {/* Products Management Routes */}
         <Route path="products" element={<Products />} />
         <Route path="products/create" element={<ProductsCreate />} />
         <Route path="products/:id/edit" element={<ProductsEdit />} />
         <Route path="products/:id" element={<ProductsIndex />} />
-        
+
         {/* Stores Management Routes */}
         <Route path="stores" element={<Stores />} />
         <Route path="stores/create" element={<StoresCreate />} />
         <Route path="stores/:id/edit" element={<StoresEdit />} />
         <Route path="stores/:id" element={<StoresIndex />} />
-        
+
         {/* Clients Management Routes */}
         <Route path="clients" element={<Clients />} />
         <Route path="clients/create" element={<ClientsCreate />} />
         <Route path="clients/:id/edit" element={<ClientsEdit />} />
         <Route path="clients/:id" element={<ClientsIndex />} />
-        
+
         {/* Marketplace Management Routes */}
         <Route path="marketplace" element={<Marketplace />} />
         <Route path="marketplace/create" element={<MarketplaceCreate />} />
         <Route path="marketplace/:id/edit" element={<MarketplaceEdit />} />
         <Route path="marketplace/:id" element={<MarketplaceIndex />} />
-        
+
         {/* Suppliers Management Routes */}
         <Route path="suppliers" element={<Suppliers />} />
         <Route path="suppliers/create" element={<SuppliersCreate />} />
         <Route path="suppliers/:id/edit" element={<SuppliersEdit />} />
         <Route path="suppliers/:id" element={<SuppliersIndex />} />
-        
+
         {/* Affiliates Management Routes */}
         <Route path="affiliates" element={<Affiliates />} />
         <Route path="affiliates/create" element={<AffiliatesCreate />} />
@@ -121,22 +126,31 @@ export default function App() {
         <Route path="affiliates/:id" element={<AffiliatesIndex />} />
         <Route path="affiliates/:id/contacts/create" element={<AffiliatesCreateContact />} />
         <Route path="affiliates/:id/zones/create" element={<AffiliatesCreateZone />} />
+
+        {/* Orders Management Routes */}
+        <Route path="orders-client" element={<Orders />} />
+        <Route path="orders-client/:id/edit" element={<OrdersEdit />} />
+        <Route path="orders-client/:id" element={<OrdersIndex />} />
         
+        {/* Invoices Management Routes */}
+        <Route path="invoices" element={<Invoices />} />
+        <Route path="invoices/:id" element={<InvoicesIndex />} />
+
         {/* Categories Management Routes */}
         <Route path="categories" element={<Categories />} />
         <Route path="categories/create" element={<Navigate to="/categories" replace />} />
         <Route path="categories/:id" element={<CategoriesIndex />} />
-        
+
         {/* Attributes Management Routes */}
         <Route path="attributes" element={<Attributes />} />
         <Route path="attributes/create" element={<AttributesNew />} />
         <Route path="attributes/:id" element={<AttributesIndex />} />
-        
+
         {/* Options Management Routes */}
         <Route path="options" element={<Options />} />
         <Route path="options/create" element={<OptionsNew />} />
         <Route path="options/:id" element={<OptionsIndex />} />
-        
+
         {/* Other Routes */}
         <Route path="inventory" element={<Inventory />} />
         <Route path="reserves" element={<Reserves />} />
@@ -150,7 +164,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
       </Routes>
-      
+
       {/* Modal global de edición de categorías */}
       <GlobalCategoryEditModal />
     </>
